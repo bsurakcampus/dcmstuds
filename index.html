@@ -1,0 +1,1864 @@
+<!--
+  dcmstuds v1.5 — PRODUCTION
+  ================================================================
+  Standalone HTML for static hosting (GitHub Pages, Netlify, etc.).
+  Fetches site data from a deployed Google Apps Script web app
+  (the /exec URL). See the APPS_SCRIPT_URL constant in the <script>
+  block below — paste your deployment URL there.
+
+  When you publish a new version of the Apps Script, edit the
+  existing deployment (Deploy → Manage deployments → pencil icon
+  → New version) so the /exec URL stays the same and this HTML
+  file doesn't need updating.
+
+  For local development with sample data, use index.local.html
+  (which has hardcoded mock data and doesn't need the API).
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DCM Studs · LOCAL DEV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --bg-soft: #F6F4EF;
+      --bg-card: #FFFFFF;
+      --ink: #0F0F0F;
+      --ink-soft: #4D4D4D;
+      --ink-mute: #8A8A8A;
+      --line: #E5E2DC;
+      --line-strong: #CFCBC2;
+      --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+      --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+
+      /* VIVID-ON-WHITE PALETTE */
+      --c-pink:    #FF2E9A;
+      --c-orange:  #FF5500;
+      --c-yellow:  #F0C000;
+      --c-green:   #00C265;
+      --c-cyan:    #0095C5;
+      --c-blue:    #3D5BFF;
+      --c-violet:  #8B2FFF;
+      --c-magenta: #E0008E;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: var(--font-mono); font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+    a { color: var(--c-pink); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ========== TOPBAR ========== */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      padding: 14px 14px 14px 32px;
+      display: flex; align-items: center; gap: 24px;
+      font-size: 13px;
+    }
+    .topbar .brand { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.01em; color: var(--ink); cursor: pointer; }
+    .topbar .brand span { color: var(--c-pink); }
+    .topbar .local-tag { font-family: var(--font-mono); font-size: 9px; color: var(--c-pink); border: 1px solid var(--c-pink); padding: 2px 6px; letter-spacing: 0.15em; }
+    .topbar nav { display: flex; gap: 18px; flex-wrap: wrap; flex: 1; margin-left: 8px; }
+    .topbar nav a {
+      color: var(--ink-soft); font-size: 12px; text-transform: uppercase;
+      letter-spacing: 0.04em; cursor: pointer; padding: 4px 0;
+      border-bottom: 1px solid transparent; transition: color 0.15s, border-color 0.15s;
+    }
+    .topbar nav a:hover, .topbar nav a.active { color: var(--c-pink); border-bottom-color: var(--c-pink); text-decoration: none; }
+    .topbar .refresh {
+      background: none; border: 1px solid var(--line-strong); color: var(--ink-soft);
+      font-family: var(--font-mono); font-size: 11px;
+      padding: 5px 10px; cursor: pointer; border-radius: 2px;
+    }
+    .topbar .refresh:hover { color: var(--c-blue); border-color: var(--c-blue); }
+
+    main { width: 100%; margin: 0; padding: 0 0 100px; }
+
+    /* ========== HERO — Scheme B (cool light) with bulb-flicker ========== */
+    /* The hero is a self-contained colour-blocked section: cool pale grey
+       background, giant white STUDS in the centre breathing on a 6s flicker
+       cycle, the headline (with inline tech icons) flickering on a separate
+       12s rhythm with long rest periods, ten decorative tech icons floating
+       in the corners, a black marquee at the bottom marking the boundary
+       to the white site below. */
+    .hero {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0;
+      padding: 96px 60px 0;           /* leave room for the fixed topbar */
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: #E8EAEE;            /* Scheme B cool light */
+      color: #0F1116;
+      cursor: default;
+      border-bottom: 1px solid var(--line);
+    }
+    /* hero-local palette tokens (don't override :root) */
+    .hero {
+      --hero-bg:       #E8EAEE;
+      --hero-ink:      #0F1116;
+      --hero-ink-soft: #4D5260;
+      --hero-ink-mute: #8A8E99;
+    }
+
+    /* eyebrow [ Bath Spa University · RAK Campus ] — sits just under the topbar */
+    .hero .eyebrow {
+      position: absolute;
+      top: 78px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 6;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--hero-ink-soft);
+      margin: 0;
+      white-space: nowrap;
+    }
+    .hero .eyebrow .bracket { color: var(--hero-ink-mute); }
+
+    /* centred headline block */
+    .hero .headline-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 5;
+      position: relative;
+      padding: 60px 0 100px;
+    }
+    .hero h1.headline {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: clamp(48px, 9vw, 144px);
+      line-height: 1.0;
+      letter-spacing: -0.035em;
+      color: var(--hero-ink);
+      max-width: 1500px;
+      margin: 0 0 36px;
+      animation: headline-flicker 12s linear infinite;
+      will-change: opacity;
+    }
+    .hero h1.headline .row { display: block; }
+
+    .hero .inline-icon {
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      vertical-align: middle;
+      width: 0.95em; height: 0.95em;
+      margin: 0 0.08em;
+      transform: translateY(-0.04em);
+    }
+    .hero .inline-icon svg { width: 100%; height: 100%; display: block; }
+
+    .hero .tagline {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: clamp(18px, 2vw, 28px);
+      color: var(--hero-ink-soft);
+      max-width: 920px;
+      line-height: 1.35;
+      display: flex; flex-wrap: wrap; justify-content: center;
+      align-items: center; gap: 6px 10px;
+    }
+    .hero .tagline .word { display: inline-flex; align-items: center; gap: 7px; }
+    .hero .tagline .word .inline-icon { width: 1.2em; height: 1.2em; }
+
+    /* ten floating decorative tech icons in the corners */
+    .hero .float-icon {
+      position: absolute;
+      width: 64px; height: 64px;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 4;
+      pointer-events: none;
+      animation: floaty 7s ease-in-out infinite;
+    }
+    .hero .float-icon svg { width: 100%; height: 100%; display: block; }
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+      50%      { transform: translateY(-16px) rotate(calc(var(--rot, 0deg) + 6deg)); }
+    }
+    .hero .float-icon.f1  { top: 14%; left:  6%;  width: 70px; animation-delay: 0s;   --rot: -8deg; }
+    .hero .float-icon.f2  { top:  9%; left: 22%;  width: 56px; animation-delay: 1.2s; --rot:  6deg; }
+    .hero .float-icon.f3  { top: 16%; right: 12%; width: 78px; animation-delay: 0.5s; --rot: 12deg; }
+    .hero .float-icon.f4  { top:  8%; right:  4%; width: 58px; animation-delay: 2.1s; --rot: -4deg; }
+    .hero .float-icon.f5  { bottom: 24%; left: 5%; width: 76px; animation-delay: 1.8s; --rot: 10deg; }
+    .hero .float-icon.f6  { bottom: 18%; left: 22%; width: 62px; animation-delay: 0.9s; --rot: -12deg; }
+    .hero .float-icon.f7  { bottom: 26%; right: 8%; width: 84px; animation-delay: 2.5s; --rot: 8deg; }
+    .hero .float-icon.f8  { bottom: 20%; right: 24%; width: 60px; animation-delay: 1.5s; --rot: -6deg; }
+    .hero .float-icon.f9  { top: 42%; left: 3%;  width: 54px; animation-delay: 3s;   --rot: 14deg; }
+    .hero .float-icon.f10 { top: 48%; right: 3%; width: 60px; animation-delay: 2.6s; --rot: -10deg; }
+
+    /* giant STUDS sat behind everything, breathing on its own 6s cycle */
+    .hero .ghost-word {
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: clamp(220px, 36vw, 540px);
+      line-height: 0.85;
+      letter-spacing: -0.05em;
+      color: #FFFFFF;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 1;
+      user-select: none;
+      animation: bulb-flicker 6s linear infinite;
+      will-change: opacity;
+    }
+
+    /* black marquee at the bottom of the hero — divides cool grey from white */
+    .hero .marquee {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      background: var(--hero-ink);
+      color: var(--hero-bg);
+      overflow: hidden;
+      padding: 18px 0;
+      z-index: 8;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .hero .marquee-track {
+      display: flex;
+      gap: 36px;
+      white-space: nowrap;
+      animation: scrollLeft 32s linear infinite;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .hero .marquee-track .item { display: inline-flex; align-items: center; gap: 14px; }
+    .hero .marquee-track .star { color: #3D5BFF; }
+    @keyframes scrollLeft {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ========== HERO ANIMATIONS — bulb flicker ========== */
+    /* STUDS: 6s loop. Ignites with a struggle, holds with micro-flicker,
+       dies in a sputter, dark for 5% of cycle, repeats. */
+    @keyframes bulb-flicker {
+      0%   { opacity: 0; }
+      2%   { opacity: 0.75; }
+      3%   { opacity: 0.05; }
+      4%   { opacity: 0.9; }
+      5%   { opacity: 0.15; }
+      7%   { opacity: 1; }
+      20%  { opacity: 1; }
+      21%  { opacity: 0.35; }
+      22%  { opacity: 1; }
+      40%  { opacity: 1; }
+      41%  { opacity: 0.6; }
+      42%  { opacity: 1; }
+      60%  { opacity: 1; }
+      61%  { opacity: 0.45; }
+      62%  { opacity: 1; }
+      78%  { opacity: 1; }
+      80%  { opacity: 0.2; }
+      82%  { opacity: 0.95; }
+      84%  { opacity: 0.05; }
+      87%  { opacity: 0.55; }
+      91%  { opacity: 0; }
+      93%  { opacity: 0.3; }
+      95%  { opacity: 0; }
+      100% { opacity: 0; }
+    }
+    /* Headline: 12s loop. Solid bright for most of the cycle, then one
+       sharp flicker burst near the end, then a small twitch, then quiet. */
+    @keyframes headline-flicker {
+      0%, 78% { opacity: 1; }
+      79%     { opacity: 0.25; }
+      80%     { opacity: 1; }
+      81%     { opacity: 0.05; }
+      82%     { opacity: 0.8; }
+      83%     { opacity: 0.2; }
+      85%     { opacity: 1; }
+      91%     { opacity: 1; }
+      92%     { opacity: 0.4; }
+      93%     { opacity: 1; }
+      100%    { opacity: 1; }
+    }
+
+    @media (max-width: 900px) {
+      .hero { padding: 80px 22px 0; margin: 0 -16px; }
+      .hero .float-icon { display: none; }
+      .hero .float-icon.f1, .hero .float-icon.f3,
+      .hero .float-icon.f5, .hero .float-icon.f7 { display: flex; }
+      .hero h1.headline { font-size: clamp(40px, 11vw, 84px); }
+      .hero .eyebrow { top: 70px; font-size: 11px; letter-spacing: 0.22em; }
+    }
+
+
+    /* ========== VISION ========== */
+    .vision {
+      padding: 100px 60px; border-bottom: 1px solid var(--line);
+      display: grid; grid-template-columns: 1fr 1.6fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .vision h2 {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: clamp(32px, 4vw, 48px); margin: 0;
+      line-height: 1.05; letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+    .vision h2 .accent { color: var(--c-pink); }
+    .vision .body p {
+      font-size: 16px; color: var(--ink); margin: 0 0 20px;
+      line-height: 1.7;
+    }
+    .vision .body p:last-child { margin-bottom: 0; }
+
+    /* ========== SECTION HEADERS ========== */
+    .section { padding: 80px 60px; border-bottom: 1px solid var(--line); }
+    .section-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 48px; gap: 24px; flex-wrap: wrap;
+    }
+    .section-header h2 {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: clamp(28px, 3.5vw, 44px); margin: 0;
+      letter-spacing: -0.02em; color: var(--ink);
+    }
+    .section-header h2 .accent-pink { color: var(--c-pink); }
+    .section-header h2 .accent-cyan { color: var(--c-cyan); }
+    .section-header h2 .accent-orange { color: var(--c-orange); }
+    .section-header .meta {
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--ink-soft); letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ========== SHOWCASE — kept as uniform grid ========== */
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+      gap: 32px;
+    }
+    .showcase {
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      overflow: hidden;
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+      display: flex; flex-direction: column;
+      position: relative;
+    }
+    .showcase::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: var(--c, var(--c-pink));
+      z-index: 1;
+    }
+    .showcase:hover {
+      border-color: var(--c, var(--c-pink));
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px -8px color-mix(in srgb, var(--c, var(--c-pink)) 25%, transparent);
+    }
+
+    .showcase .featured {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .showcase .featured img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.5s;
+    }
+    .showcase .featured:hover img { transform: scale(1.04); }
+    .showcase .featured iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .showcase .featured .play-big {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 72px; height: 72px;
+      background: rgba(255,255,255,0.95);
+      border: 2px solid var(--c, var(--c-pink));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+      transition: background 0.2s, transform 0.2s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .showcase .featured:hover .play-big {
+      background: var(--c, var(--c-pink));
+      transform: translate(-50%, -50%) scale(1.06);
+    }
+    .showcase .featured .play-big::after {
+      content: '';
+      border-left: 18px solid var(--c, var(--c-pink));
+      border-top: 12px solid transparent;
+      border-bottom: 12px solid transparent;
+      margin-left: 6px;
+      transition: border-left-color 0.2s;
+    }
+    .showcase .featured:hover .play-big::after { border-left-color: white; }
+    .showcase .featured .featured-tag {
+      position: absolute; top: 14px; left: 14px;
+      font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      padding: 5px 10px;
+      background: var(--c, var(--c-pink));
+      color: white;
+      z-index: 2;
+    }
+    /* Featured ribbon — solid module-colour band at the bottom of the
+       big thumbnail with the student name in white. Different colour per
+       showcase so the row reads colourful. */
+    .showcase .featured .student-tag {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: var(--c, var(--c-pink));
+      color: #FFFFFF;
+      font-family: var(--font-display); font-weight: 800;
+      font-size: 22px;
+      padding: 14px 22px;
+      letter-spacing: -0.01em;
+      z-index: 2;
+    }
+
+    .showcase .module-info {
+      padding: 20px 22px 18px;
+      display: flex; flex-direction: column; gap: 6px;
+      border-bottom: 1px solid var(--line);
+    }
+    .showcase .module-info .module-name {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: 26px; color: var(--c, var(--c-pink));
+      line-height: 1.1; cursor: pointer;
+      letter-spacing: -0.015em;
+    }
+    .showcase .module-info .module-name:hover { text-decoration: underline; }
+    .showcase .module-info .module-meta {
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--ink-soft); letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: flex; gap: 14px; flex-wrap: wrap; margin-top: 4px;
+    }
+    .showcase .module-info .module-meta .sep { color: var(--ink-mute); }
+
+    .showcase .filmstrip {
+      padding: 18px 22px 22px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .showcase .mini { cursor: pointer; display: flex; flex-direction: column; }
+    .showcase .mini.empty { cursor: default; pointer-events: none; }
+    .showcase .mini.empty .mini-thumb {
+      background: #FAFAF8;
+      border: 1px dashed var(--line-strong);
+      opacity: 0.7;
+    }
+    .showcase .mini .mini-thumb {
+      position: relative; aspect-ratio: 16 / 9;
+      background: #000; overflow: hidden;
+      border: 1px solid var(--line);
+      transition: border-color 0.2s;
+    }
+    .showcase .mini:hover .mini-thumb { border-color: var(--c, var(--c-pink)); }
+    .showcase .mini .mini-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .showcase .mini .mini-thumb iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .showcase .mini .mini-thumb .mini-play {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 26px; height: 26px;
+      background: rgba(255,255,255,0.92);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .showcase .mini .mini-thumb .mini-play::after {
+      content: '';
+      border-left: 7px solid var(--c, var(--c-pink));
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      margin-left: 2px;
+    }
+    .showcase .mini .mini-meta {
+      padding-top: 8px;
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--ink-soft); letter-spacing: 0.04em;
+      line-height: 1.35;
+    }
+    .showcase .mini .mini-meta .pos { color: var(--c, var(--c-pink)); font-weight: 600; }
+    .showcase .mini .mini-meta .student-mini {
+      font-family: var(--font-display); font-weight: 600;
+      font-size: 12px; color: var(--ink); margin-top: 2px;
+      letter-spacing: 0;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .showcase .mini .mini-meta .student-line {
+      display: block;
+      height: 2px; width: 20px;
+      background: var(--c, var(--c-pink));
+      margin-top: 6px;
+    }
+
+    .showcase .view-all {
+      padding: 14px 22px 18px;
+      border-top: 1px solid var(--line);
+      font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--c, var(--c-pink));
+      cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .showcase .view-all:hover { text-decoration: underline; }
+    .showcase .view-all .arrow { font-size: 14px; }
+
+    /* ========== MODULE NAV GRID ========== */
+    .module-nav-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .module-nav {
+      padding: 22px;
+      background: var(--bg-soft);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--c, var(--c-pink));
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .module-nav:hover {
+      background: white;
+      transform: translateX(4px);
+      box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--c, var(--c-pink)) 30%, transparent);
+    }
+    .module-nav .num {
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--ink-mute); letter-spacing: 0.1em;
+    }
+    .module-nav .name {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: 18px; color: var(--c, var(--c-pink));
+      letter-spacing: -0.01em;
+    }
+    .module-nav .tutor {
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--ink-soft); letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ========== MODULE PAGE ========== */
+    .module-hero {
+      position: relative;
+      padding: 120px 60px 60px;
+      border-bottom: 1px solid var(--line);
+    }
+    .module-hero .breadcrumb {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--ink-soft); margin-bottom: 24px;
+    }
+    .module-hero .breadcrumb a { color: var(--ink-soft); cursor: pointer; }
+    .module-hero .breadcrumb a:hover { color: var(--c, var(--c-pink)); text-decoration: none; }
+    .module-hero h1 {
+      font-family: var(--font-display); font-weight: 900;
+      font-size: clamp(40px, 7vw, 96px);
+      color: var(--c, var(--c-pink));
+      line-height: 0.9; letter-spacing: -0.03em;
+      margin: 0 0 24px;
+    }
+    .module-hero .module-meta-row {
+      display: flex; gap: 28px; flex-wrap: wrap;
+      font-family: var(--font-mono); font-size: 12px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .module-hero .module-meta-row .label { color: var(--ink-mute); }
+    .module-hero .module-meta-row .val { color: var(--ink); font-weight: 500; }
+    .module-hero .brief {
+      font-family: var(--font-display); font-weight: 500;
+      font-size: clamp(20px, 2.2vw, 28px);
+      color: var(--ink); max-width: 800px;
+      margin-top: 32px; line-height: 1.35;
+    }
+
+    .semester-section { padding: 64px 60px; border-bottom: 1px solid var(--line); }
+    .semester-section:last-child { border-bottom: none; }
+    .semester-section.muted .masonry-card { opacity: 0.85; }
+    .semester-section .sem-head {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 36px; gap: 20px; flex-wrap: wrap;
+    }
+    .semester-section h3 {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: clamp(22px, 2.5vw, 30px);
+      margin: 0; color: var(--ink);
+      letter-spacing: -0.015em;
+    }
+    .semester-section h3 .accent { color: var(--c, var(--c-pink)); }
+    .semester-section .sem-meta {
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--ink-soft); letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ========== SNUG MOSAIC — HERO + STACKED SMALLS, NO GAPS ========== */
+    /* Hero spans 4 cols (16:9). Smalls span 2 cols (16:9). A 4-col hero
+       is twice as wide as a 2-col small; with both at 16:9, the hero's
+       height equals exactly 2 stacked smalls' heights. Adding `dense`
+       grid auto-flow lets two stacked smalls fill the column next to a
+       hero with NO gap. */
+    .masonry {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      grid-auto-flow: row dense;
+      align-items: start;
+    }
+
+    .masonry-card {
+      position: relative;
+      display: flex; flex-direction: column;
+      background: transparent;
+      padding: 0;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+    .masonry-card:hover {
+      transform: translateY(-2px);
+    }
+
+    /* hero = 4 cols × 2 rows (so 2 smalls stack in the 2-col gap beside it);
+       small = 2 cols; medium = 3 cols; wide = 6 cols */
+    .masonry-card.size-hero   { grid-column: span 4; grid-row: span 2; }
+    .masonry-card.size-small  { grid-column: span 2; grid-row: span 1; }
+    .masonry-card.size-medium { grid-column: span 3; grid-row: span 1; }
+    .masonry-card.size-wide   { grid-column: span 6; grid-row: span 1; }
+
+    @media (max-width: 1200px) {
+      .masonry { grid-template-columns: repeat(4, 1fr); }
+      .masonry-card.size-hero   { grid-column: span 4; grid-row: span 2; }
+      .masonry-card.size-small  { grid-column: span 2; grid-row: span 1; }
+      .masonry-card.size-medium { grid-column: span 2; grid-row: span 1; }
+      .masonry-card.size-wide   { grid-column: span 4; grid-row: span 1; }
+    }
+    @media (max-width: 700px) {
+      .masonry { grid-template-columns: 1fr; gap: 6px; }
+      .masonry-card { grid-column: span 1 !important; grid-row: span 1 !important; }
+    }
+
+    .masonry-card .v-thumb {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;        /* every thumb is 16:9 */
+      background: #000;
+      cursor: pointer;
+      overflow: hidden;
+      display: block;
+    }
+
+    .masonry-card .v-thumb img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.5s;
+    }
+    .masonry-card .v-thumb:hover img { transform: scale(1.06); }
+
+    /* The student name sits OUTSIDE the thumbnail (clean editorial),
+       with a small module-colour underline as the only colour accent.
+       No overlays, no scrims, no gold sheen. */
+    .masonry-card .v-name {
+      padding: 14px 4px 4px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--ink);
+      font-size: 20px;
+      letter-spacing: -0.01em;
+      line-height: 1.15;
+    }
+    .masonry-card .v-name::after {
+      content: '';
+      display: block;
+      height: 2px; width: 28px;
+      background: var(--c);
+      margin-top: 10px;
+    }
+
+    /* per-size name scaling */
+    .masonry-card.size-hero  .v-name { font-size: 34px; padding-top: 18px; }
+    .masonry-card.size-hero  .v-name::after { width: 44px; margin-top: 14px; height: 3px; }
+    .masonry-card.size-wide  .v-name { font-size: 26px; padding-top: 16px; }
+    .masonry-card.size-wide  .v-name::after { width: 36px; }
+    .masonry-card.size-medium .v-name { font-size: 20px; }
+    .masonry-card.size-small .v-name { font-size: 16px; padding-top: 12px; }
+    .masonry-card.size-small .v-name::after { width: 24px; margin-top: 8px; }
+
+    /* play button */
+    .masonry-card .v-thumb .v-play {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.95);
+      border: 1.5px solid var(--tile, #FF2E9A);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+      transition: background 0.2s, transform 0.2s;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.4);
+      z-index: 3;
+    }
+    .masonry-card.size-hero .v-thumb .v-play { width: 100px; height: 100px; }
+    .masonry-card.size-wide .v-thumb .v-play { width: 72px; height: 72px; }
+    .masonry-card.size-medium .v-thumb .v-play { width: 60px; height: 60px; }
+    .masonry-card.size-small .v-thumb .v-play { width: 50px; height: 50px; }
+    .masonry-card .v-thumb:hover .v-play {
+      background: var(--tile, #FF2E9A);
+      transform: translate(-50%, -50%) scale(1.06);
+    }
+    .masonry-card .v-thumb .v-play::after {
+      content: '';
+      border-left: 16px solid var(--tile, #FF2E9A);
+      border-top: 11px solid transparent;
+      border-bottom: 11px solid transparent;
+      margin-left: 5px;
+      transition: border-left-color 0.2s;
+    }
+    .masonry-card.size-hero .v-thumb .v-play::after {
+      border-left-width: 22px; border-top-width: 15px; border-bottom-width: 15px;
+    }
+    .masonry-card.size-small .v-thumb .v-play::after {
+      border-left-width: 13px; border-top-width: 9px; border-bottom-width: 9px;
+    }
+    .masonry-card .v-thumb:hover .v-play::after { border-left-color: white; }
+
+    /* position tag (top-left) in tile color */
+    .masonry-card .v-thumb .pos-tag {
+      position: absolute; top: 12px; left: 12px;
+      font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+      padding: 5px 10px;
+      background: var(--tile, #FF2E9A);
+      color: white;
+      letter-spacing: 0.08em;
+      z-index: 2;
+    }
+    .masonry-card.size-hero .v-thumb .pos-tag { font-size: 13px; padding: 6px 14px; }
+
+    /* ========== LIGHTBOX ========== */
+    .lightbox {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.92);
+      display: none;
+      align-items: center; justify-content: center;
+      z-index: 2000;
+      padding: 40px;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox .lb-frame {
+      position: relative;
+      width: 100%;
+      max-width: 1280px;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+    }
+    .lightbox .lb-frame iframe {
+      width: 100%; height: 100%; border: 0;
+    }
+    .lightbox .lb-close {
+      position: absolute; top: -42px; right: 0;
+      width: 36px; height: 36px;
+      background: transparent; border: none;
+      color: #fff; cursor: pointer;
+      font-family: var(--font-mono); font-size: 24px; font-weight: 300;
+      line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox .lb-close:hover { color: var(--c-pink); }
+    .lightbox .lb-caption {
+      position: absolute; bottom: -36px; left: 0; right: 0;
+      font-family: var(--font-mono); font-size: 12px;
+      color: #fff; opacity: 0.7;
+      text-align: center;
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    @media (max-width: 700px) {
+      .lightbox { padding: 16px; }
+      .lightbox .lb-close { top: -36px; }
+    }
+
+    /* ========== FOOTER ========== */
+    footer {
+      padding: 60px 32px 40px;
+      border-top: 1px solid var(--line);
+      color: var(--ink-soft);
+      font-size: 12px;
+      text-align: center;
+    }
+    footer .contact { margin-top: 8px; color: var(--ink-mute); }
+
+    .loading {
+      padding: 160px 36px; text-align: center;
+      font-family: var(--font-mono); color: var(--ink-soft);
+    }
+    .loading::after { content: '_'; animation: blink 1s steps(2) infinite; color: var(--c-pink); }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    @media (max-width: 900px) {
+      .topbar { padding: 12px 10px 12px 16px; gap: 12px; }
+      .music-toggle { top: 10px; right: 10px; padding: 4px 8px; font-size: 10px; }
+      .music-toggle .label { display: none; }
+      .topbar nav { gap: 10px; }
+      .topbar nav a { font-size: 11px; }
+      main { padding: 0 0 80px; }
+      .hero { margin: 0; padding: 80px 22px 0; cursor: default; }
+      .vision { grid-template-columns: 1fr; gap: 24px; padding: 60px 22px; }
+      .section { padding: 60px 22px; }
+      .showcase-grid { grid-template-columns: 1fr; gap: 20px; }
+      .module-hero { padding: 100px 22px 40px; }
+      .module-hero h1 { font-size: clamp(40px, 12vw, 64px); }
+      .semester-section { padding: 50px 22px; }
+    }
+
+    /* ========== AMBIENT MUSIC TOGGLE (pinned top-right corner) ========== */
+    .music-toggle {
+      position: fixed;
+      top: 12px;
+      right: 14px;
+      z-index: 200;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid var(--c-pink);
+      color: var(--c-pink);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 600;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 2px;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      animation: musicIdlePulse 2.2s ease-in-out infinite;
+    }
+    @keyframes musicIdlePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 46, 154, 0); }
+      50%      { box-shadow: 0 0 0 6px rgba(255, 46, 154, 0.18); }
+    }
+    .music-toggle:hover {
+      background: var(--c-pink);
+      color: #fff;
+    }
+    .music-toggle .icon {
+      width: 14px; height: 14px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .music-toggle .icon svg { width: 100%; height: 100%; }
+    .music-toggle .label {
+      white-space: nowrap;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* PLAYING — solid pink, animated EQ bars */
+    .music-toggle.playing {
+      background: var(--c-pink);
+      color: #fff;
+      animation: none;
+      box-shadow: 0 0 0 4px rgba(255, 46, 154, 0.18);
+    }
+    .music-toggle.playing .icon svg .bar {
+      transform-origin: center bottom;
+      animation: eqBars 0.6s ease-in-out infinite;
+    }
+    .music-toggle.playing .icon svg .bar1 { animation-delay: -0.15s; }
+    .music-toggle.playing .icon svg .bar2 { animation-delay: -0.45s; }
+    .music-toggle.playing .icon svg .bar3 { animation-delay: -0.1s;  }
+    .music-toggle.playing .icon svg .bar4 { animation-delay: -0.3s;  }
+    @keyframes eqBars {
+      0%, 100% { transform: scaleY(0.35); }
+      50%      { transform: scaleY(1.0); }
+    }
+    /* LOADING */
+    .music-toggle.loading {
+      color: var(--ink-mute);
+      border-color: var(--ink-mute);
+      background: rgba(255,255,255,0.92);
+      animation: none;
+    }
+    .music-toggle.loading .icon { animation: musicSpin 0.9s linear infinite; }
+    @keyframes musicSpin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* ========== SCROLL TO TOP (fixed bottom-right) ========== */
+    .scroll-top {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      z-index: 200;
+      width: 44px; height: 44px;
+      background: var(--ink);
+      color: var(--bg);
+      border: 0;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: opacity 0.25s, transform 0.25s, background 0.15s, box-shadow 0.2s;
+    }
+    .scroll-top.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    .scroll-top:hover {
+      background: var(--c-pink);
+      box-shadow: 0 6px 22px rgba(255,46,154,0.35);
+    }
+    .scroll-top svg { width: 18px; height: 18px; }
+    @media (max-width: 900px) {
+      .scroll-top { bottom: 16px; right: 16px; width: 40px; height: 40px; }
+      .scroll-top svg { width: 16px; height: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand" onclick="navigateTo('home')">DCM<span>·</span>STUDS</div>
+    <button class="music-toggle" id="music-toggle" type="button" aria-label="Play ambient music">
+      <span class="icon" id="music-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="6,4 20,12 6,20" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
+      <span class="label" id="music-label">MUSIC</span>
+    </button>
+  </header>
+
+  <main id="app">
+    <div class="loading">loading site data</div>
+  </main>
+
+  <footer>
+    <div id="footer-text"></div>
+    <div class="contact" id="footer-contact"></div>
+  </footer>
+
+  <!-- Ambient music — persists across page navigation since it sits outside #app.
+       The stream URL is supplied from _CONFIG (homepage_music_url); a SomaFM
+       fallback is used if the sheet doesn't define one. preload="none" keeps
+       data usage to zero until the user actually presses play. -->
+  <audio id="ambient-audio" preload="none" loop></audio>
+
+  <!-- Scroll to top — appears after the user has scrolled past the hero,
+       smooth-scrolls the page back to 0. Lives outside #app so it's
+       present on every page (home + module pages). -->
+  <button class="scroll-top" id="scroll-top" type="button" aria-label="Scroll to top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6,15 12,9 18,15"/>
+    </svg>
+  </button>
+
+  <!-- Lightbox for fullscreen video playback -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+    <div class="lb-frame" onclick="event.stopPropagation()">
+      <button class="lb-close" onclick="closeLightbox(event)" aria-label="Close">✕</button>
+      <div id="lb-iframe-host"></div>
+      <div class="lb-caption" id="lb-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // =================================================================
+    // VIVID PALETTE
+    // =================================================================
+    const MODULE_COLORS = {
+      "Digital Storytelling":   "#FF2E9A",
+      "Creative Coding":        "#0095C5",
+      "Web Dev 1":              "#F0C000",
+      "Web Dev 2":              "#00C265",
+      "UX Design":              "#8B2FFF",
+      "Physical Computing":     "#FF5500",
+      "Game Design":            "#E0008E",
+      "Emerging Technologies":  "#3D5BFF",
+      "Cyber Security":         "#FF2E9A",
+      "Creative Photography":   "#F0C000",
+      "Short Film Drama":       "#8B2FFF",
+      "Short Film Documentary": "#FF5500"
+    };
+    function colorFor(name) { return MODULE_COLORS[name] || "#FF2E9A"; }
+
+    // =================================================================
+    // CONSTELLATION ENGINE — colorful on WHITE (multiply blend)
+    // =================================================================
+    const PALETTE = [
+      [255, 46, 154],
+      [255, 85, 0],
+      [240, 192, 0],
+      [0, 194, 101],
+      [0, 149, 197],
+      [61, 91, 255],
+      [139, 47, 255],
+      [224, 0, 142]
+    ];
+    function lerpColor(a, b, t) { return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
+    function rgba(c, a) { return 'rgba('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+','+a+')'; }
+
+    class ChromaticField {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d', { alpha: false });
+        this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+        this.particles = [];
+        this.pulses = [];
+        this.mouse = { x: -9999, y: -9999, active: false };
+        this.cursorColor = [120, 120, 130];
+        this.running = false;
+        this.visible = true;
+
+        this.linkDist = 130;
+        this.cursorRadius = 300;
+        this.cursorPull = 0.05;
+        this.cursorAura = 160;
+        this.particleDrift = 0.22;
+        this.particleDamping = 0.94;
+        this.bgFade = 0.10;
+        this.bgColor = [255, 255, 255];
+
+        this.resize();
+        this.spawn();
+
+        this._onMouseMove = this._onMouseMove.bind(this);
+        this._onMouseLeave = this._onMouseLeave.bind(this);
+        this._onClick = this._onClick.bind(this);
+        this._onResize = this._onResize.bind(this);
+
+        this.host = canvas.parentElement;
+        this.host.addEventListener('mousemove', this._onMouseMove);
+        this.host.addEventListener('mouseleave', this._onMouseLeave);
+        this.host.addEventListener('click', this._onClick);
+        window.addEventListener('resize', this._onResize);
+        if (window.visualViewport) window.visualViewport.addEventListener('resize', this._onResize);
+
+        this._io = new IntersectionObserver(entries => { this.visible = entries[0].isIntersecting; }, { threshold: 0.01 });
+        this._io.observe(canvas);
+
+        this._onVisibility = () => { this.visible = !document.hidden; };
+        document.addEventListener('visibilitychange', this._onVisibility);
+
+        this.paintBg();
+      }
+
+      paintBg() { this.ctx.fillStyle = rgba(this.bgColor, 1); this.ctx.fillRect(0, 0, this.w, this.h); }
+
+      resize() {
+        const w = this.canvas.clientWidth;
+        const h = this.canvas.clientHeight;
+        this.canvas.width = Math.max(1, Math.floor(w * this.dpr));
+        this.canvas.height = Math.max(1, Math.floor(h * this.dpr));
+        this.w = w; this.h = h;
+        this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+        this.paintBg();
+      }
+
+      spawn() {
+        const area = this.w * this.h;
+        const count = Math.min(220, Math.max(100, Math.floor(area / 9000)));
+        this.particles = [];
+        for (let i = 0; i < count; i++) {
+          this.particles.push({
+            x: Math.random() * this.w, y: Math.random() * this.h,
+            vx: (Math.random() - 0.5) * this.particleDrift,
+            vy: (Math.random() - 0.5) * this.particleDrift,
+            r: 1.5 + Math.random() * 2.2,
+            heat: 0,
+            color: PALETTE[Math.floor(Math.random() * PALETTE.length)].slice()
+          });
+        }
+      }
+
+      _onResize() { this.resize(); this.spawn(); }
+      _onMouseMove(e) {
+        const r = this.host.getBoundingClientRect();
+        this.mouse.x = e.clientX - r.left;
+        this.mouse.y = e.clientY - r.top;
+        this.mouse.active = true;
+      }
+      _onMouseLeave() { this.mouse.active = false; this.mouse.x = -9999; this.mouse.y = -9999; }
+      _onClick(e) {
+        const r = this.host.getBoundingClientRect();
+        this.pulses.push({ x: e.clientX - r.left, y: e.clientY - r.top, t0: performance.now(), life: 1700, color: this.cursorColor.slice() });
+        if (this.pulses.length > 5) this.pulses.shift();
+      }
+
+      start() {
+        if (this.running) return;
+        this.running = true;
+        const loop = () => {
+          if (!this.running) return;
+          if (this.visible) this.step();
+          this._raf = requestAnimationFrame(loop);
+        };
+        this._raf = requestAnimationFrame(loop);
+      }
+      stop() {
+        this.running = false;
+        if (this._raf) cancelAnimationFrame(this._raf);
+        this.host.removeEventListener('mousemove', this._onMouseMove);
+        this.host.removeEventListener('mouseleave', this._onMouseLeave);
+        this.host.removeEventListener('click', this._onClick);
+        window.removeEventListener('resize', this._onResize);
+        if (window.visualViewport) window.visualViewport.removeEventListener('resize', this._onResize);
+        document.removeEventListener('visibilitychange', this._onVisibility);
+        if (this._io) this._io.disconnect();
+      }
+
+      step() {
+        const ctx = this.ctx;
+        const w = this.w, h = this.h;
+        const now = performance.now();
+
+        // fade — white wash, the trails read as soft color smears
+        ctx.fillStyle = rgba(this.bgColor, this.bgFade + 0.86);
+        ctx.fillRect(0, 0, w, h);
+
+        for (let i = this.pulses.length - 1; i >= 0; i--) {
+          if (now - this.pulses[i].t0 > this.pulses[i].life) this.pulses.splice(i, 1);
+        }
+
+        const mx = this.mouse.x, my = this.mouse.y, mActive = this.mouse.active;
+        const cr = this.cursorRadius;
+        const linkD = this.linkDist;
+        const linkD2 = linkD * linkD;
+
+        for (let i = 0; i < this.particles.length; i++) {
+          const p = this.particles[i];
+          p.vx += (Math.random() - 0.5) * 0.025;
+          p.vy += (Math.random() - 0.5) * 0.025;
+
+          if (mActive) {
+            const dx = mx - p.x, dy = my - p.y;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < cr * cr) {
+              const d = Math.sqrt(d2) || 0.0001;
+              const fall = 1 - d / cr;
+              p.vx += (dx / d) * this.cursorPull * fall * 2.8;
+              p.vy += (dy / d) * this.cursorPull * fall * 2.8;
+              if (d < 80) {
+                p.heat = Math.min(1, p.heat + 0.12);
+                this.cursorColor = lerpColor(this.cursorColor, p.color, 0.07 * fall);
+              }
+            }
+          }
+
+          for (let k = 0; k < this.pulses.length; k++) {
+            const pu = this.pulses[k];
+            const ageN = (now - pu.t0) / pu.life;
+            const ringR = ageN * 380;
+            const dx = p.x - pu.x, dy = p.y - pu.y;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (Math.abs(d - ringR) < 26) {
+              p.heat = Math.min(1, p.heat + 0.85 * (1 - ageN));
+              if (d > 0) {
+                p.vx += (dx / d) * 0.5 * (1 - ageN);
+                p.vy += (dy / d) * 0.5 * (1 - ageN);
+              }
+              p.color = lerpColor(p.color, pu.color, 0.06);
+            }
+          }
+
+          p.vx *= this.particleDamping;
+          p.vy *= this.particleDamping;
+          p.x += p.vx;
+          p.y += p.vy;
+
+          if (p.x < -10) p.x = w + 10;
+          if (p.x > w + 10) p.x = -10;
+          if (p.y < -10) p.y = h + 10;
+          if (p.y > h + 10) p.y = -10;
+
+          p.heat *= 0.94;
+        }
+
+        // multiply blend — on white, this deepens colors instead of washing
+        ctx.globalCompositeOperation = 'multiply';
+
+        ctx.lineWidth = 1;
+        for (let i = 0; i < this.particles.length; i++) {
+          const a = this.particles[i];
+          for (let j = i + 1; j < this.particles.length; j++) {
+            const b = this.particles[j];
+            const dx = a.x - b.x, dy = a.y - b.y;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < linkD2) {
+              const d = Math.sqrt(d2);
+              const t = 1 - d / linkD;
+              const heat = Math.max(a.heat, b.heat);
+              const alpha = t * 0.32 + heat * 0.55;
+              const blended = lerpColor(a.color, b.color, 0.5);
+              ctx.strokeStyle = rgba(blended, alpha);
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+          }
+        }
+
+        for (let i = 0; i < this.particles.length; i++) {
+          const p = this.particles[i];
+          const r = p.r + p.heat * 2.2;
+          const alpha = 0.7 + p.heat * 0.3;
+          ctx.fillStyle = rgba(p.color, alpha);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        for (let k = 0; k < this.pulses.length; k++) {
+          const pu = this.pulses[k];
+          const ageN = (now - pu.t0) / pu.life;
+          const ringR = ageN * 380;
+          const alpha = (1 - ageN) * 0.85;
+          ctx.strokeStyle = rgba(pu.color, alpha);
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(pu.x, pu.y, ringR, 0, Math.PI * 2);
+          ctx.stroke();
+
+          const grd = ctx.createRadialGradient(pu.x, pu.y, 0, pu.x, pu.y, ringR);
+          grd.addColorStop(0, rgba(pu.color, alpha * 0.25));
+          grd.addColorStop(1, rgba(pu.color, 0));
+          ctx.fillStyle = grd;
+          ctx.beginPath();
+          ctx.arc(pu.x, pu.y, ringR, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        if (mActive) {
+          const aura = this.cursorAura;
+          const grd = ctx.createRadialGradient(mx, my, 0, mx, my, aura);
+          grd.addColorStop(0, rgba(this.cursorColor, 0.45));
+          grd.addColorStop(0.5, rgba(this.cursorColor, 0.15));
+          grd.addColorStop(1, rgba(this.cursorColor, 0));
+          ctx.fillStyle = grd;
+          ctx.beginPath();
+          ctx.arc(mx, my, aura, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.globalCompositeOperation = 'source-over';
+
+        // crosshair drawn over (normal blend) so it reads cleanly
+        if (mActive) {
+          ctx.strokeStyle = rgba(this.cursorColor, 0.85);
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.arc(mx, my, 20, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(mx - 36, my); ctx.lineTo(mx - 24, my);
+          ctx.moveTo(mx + 24, my); ctx.lineTo(mx + 36, my);
+          ctx.moveTo(mx, my - 36); ctx.lineTo(mx, my - 24);
+          ctx.moveTo(mx, my + 24); ctx.lineTo(mx, my + 36);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // =================================================================
+    // HEX READOUTS
+    // =================================================================
+    const HEX = '0123456789ABCDEF';
+    function randHex(n) { let s = ''; for (let i = 0; i < n; i++) s += HEX[Math.floor(Math.random() * 16)]; return s; }
+    function randBin(n) { let s = ''; for (let i = 0; i < n; i++) s += (Math.random() < 0.5 ? '0' : '1'); return s; }
+    let hexTimer = null;
+    function startHexReadouts() {
+      stopHexReadouts();
+      const tl = document.querySelector('.hero .hex.tl');
+      const tr = document.querySelector('.hero .hex.tr');
+      const bl = document.querySelector('.hero .hex.bl');
+      const br = document.querySelector('.hero .hex.br');
+      function tick() {
+        if (tl) tl.textContent = 'NODE   0x' + randHex(4) + '\nFIELD  ' + randHex(8) + '\nSTATE  ' + randBin(8);
+        if (tr) tr.textContent = randHex(8) + '\n' + randHex(8) + '\n∾ ' + (Math.floor(Math.random()*999)).toString().padStart(3,'0');
+        if (bl) bl.textContent = '> ' + randBin(16);
+        if (br) br.textContent = 'v1.5 · ' + randHex(2) + ':' + randHex(2) + ':' + randHex(2);
+      }
+      tick();
+      hexTimer = setInterval(tick, 200);
+    }
+    function stopHexReadouts() { if (hexTimer) { clearInterval(hexTimer); hexTimer = null; } }
+
+    // =================================================================
+    // CLIENT
+    // =================================================================
+    //
+    // ┌──────────────────────────────────────────────────────────────┐
+    // │  PASTE YOUR DEPLOYED APPS SCRIPT URL HERE                    │
+    // │                                                              │
+    // │  Get this from: Apps Script editor → Deploy → Manage         │
+    // │  deployments → copy the /exec URL.                           │
+    // │                                                              │
+    // │  When you redeploy a new version of the Apps Script, the     │
+    // │  /exec URL stays the same — no need to update this file.     │
+    // │  Just use Manage Deployments → Edit pencil → New version.    │
+    // └──────────────────────────────────────────────────────────────┘
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzh0kJ2YPpM1G0s00gQcySfItaARR_kGrvZZ9z4geHjNBddS9RDU9DHf55_XhplV1u6XA/exec";
+
+    let SITE = null;
+    let currentField = null;
+
+    function isUrlConfigured() {
+      return APPS_SCRIPT_URL && APPS_SCRIPT_URL.indexOf("PASTE_") !== 0;
+    }
+
+    // Fetch site data from the deployed Apps Script. The Apps Script
+    // serves JSON from its doGet() handler. forceRefresh appends a
+    // cachebuster query param so the browser doesn't serve a stale
+    // response — useful after the user has updated the sheet.
+    function fetchSiteData(forceRefresh, onSuccess, onFailure) {
+      if (!isUrlConfigured()) {
+        onFailure(new Error("Site URL not configured. Edit APPS_SCRIPT_URL near the top of the <script> block."));
+        return;
+      }
+      const sep = APPS_SCRIPT_URL.indexOf("?") === -1 ? "?" : "&";
+      const url = forceRefresh ? (APPS_SCRIPT_URL + sep + "_=" + Date.now()) : APPS_SCRIPT_URL;
+      fetch(url, { method: "GET", redirect: "follow" })
+        .then(function(r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.json();
+        })
+        .then(function(data) { onSuccess(data); })
+        .catch(function(err) { onFailure(err); });
+    }
+
+    function load() {
+      fetchSiteData(false,
+        function(data) { SITE = data; renderShell(); renderRoute(); },
+        function(err) {
+          console.error("load failed:", err);
+          document.getElementById('app').innerHTML =
+            '<div class="loading" style="padding:120px 60px;color:var(--ink-soft);max-width:720px;">' +
+            '<div style="font-family:var(--font-display);font-weight:900;font-size:28px;color:var(--ink);margin-bottom:14px;">Could not load site data</div>' +
+            '<div style="font-family:var(--font-mono);font-size:13px;line-height:1.6;">' +
+            escapeHtml(String(err && err.message ? err.message : err)) +
+            '</div>' +
+            '<div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-mute);margin-top:24px;line-height:1.55;">' +
+            'Check that APPS_SCRIPT_URL near the top of the page source points to a deployed Apps Script /exec URL, and that the deployment is set to <em>Anyone</em> access.' +
+            '</div>' +
+            '</div>';
+        }
+      );
+    }
+    function refreshData() {
+      stopHeroFx();
+      document.getElementById('app').innerHTML = '<div class="loading">refreshing</div>';
+      load();
+    }
+    function stopHeroFx() {
+      if (currentField) { currentField.stop(); currentField = null; }
+      stopHexReadouts();
+    }
+
+    function currentRoute() {
+      const hash = (window.location.hash || '').replace(/^#/, '');
+      if (!hash || hash === 'home') return { type: 'home' };
+      if (hash.indexOf('module=') === 0) return { type: 'module', name: decodeURIComponent(hash.slice(7)) };
+      return { type: 'home' };
+    }
+    function navigateTo(route, name) {
+      if (route === 'home') window.location.hash = '';
+      else if (route === 'module') window.location.hash = 'module=' + encodeURIComponent(name);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    window.addEventListener('hashchange', renderRoute);
+
+    function renderShell() {
+      // (topbar module nav was removed — module name is shown prominently
+      //  on the module page itself, so the duplicate strip in the header
+      //  was redundant. Navigation between modules now happens via the
+      //  All Modules grid on the home page.)
+      document.getElementById('footer-text').textContent = SITE.config.footer_text || '';
+      document.getElementById('footer-contact').textContent = SITE.config.footer_contact || '';
+    }
+    function setActiveNav(name) {
+      // no-op since the topbar nav is gone — kept as a stub so older
+      // call sites don't error out
+    }
+
+    function renderRoute() {
+      if (!SITE) return;
+      stopHeroFx();
+      const r = currentRoute();
+      const nav = document.getElementById('nav-modules');
+      if (r.type === 'module') {
+        if (nav) nav.style.display = '';
+        renderModule(r.name);
+        setActiveNav(r.name);
+      } else {
+        if (nav) nav.style.display = 'none';   // hide module links on homepage
+        renderHome();
+        setActiveNav(null);
+      }
+    }
+
+    // ============ HOMEPAGE ============
+    function renderHome() {
+      const cfg = SITE.config;
+      const currentSem = SITE.current_semester;
+      const modulesInCurrent = SITE.modules.filter(function(m) { return m.in_current_semester && m.latest_block && m.latest_block.videos.length; });
+      const allModules = SITE.modules.filter(function(m) { return m.latest_block && m.latest_block.videos.length; });
+
+      const html = []
+        .concat([
+          '<section class="hero">',
+          '  <div class="ghost-word">STUDS</div>',
+          // ten floating tech icons
+          '  <div class="float-icon f1" style="color: var(--c-pink)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"><path d="M8 18h10l4-6h20l4 6h10v32H8z"/><circle cx="32" cy="32" r="9" fill="currentColor" stroke="none"/></svg></div>',
+          '  <div class="float-icon f2" style="color: var(--c-violet)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22,16 8,32 22,48"/><polyline points="42,16 56,32 42,48"/><line x1="36" y1="14" x2="28" y2="50" stroke-width="3.5"/></svg></div>',
+          '  <div class="float-icon f3" style="color: var(--c-yellow)"><svg viewBox="0 0 64 64" fill="currentColor"><path d="M44 8v32.5a10 10 0 1 1-6-9.2V18l-18 4v22.5a10 10 0 1 1-6-9.2V18z"/></svg></div>',
+          '  <div class="float-icon f4" style="color: var(--c-cyan)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="24" y="8" width="16" height="30" rx="8" fill="currentColor" stroke="none"/><path d="M14 32a18 18 0 0 0 36 0"/><line x1="32" y1="50" x2="32" y2="58"/><line x1="22" y1="58" x2="42" y2="58"/></svg></div>',
+          '  <div class="float-icon f5" style="color: var(--c-green)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"><circle cx="32" cy="32" r="26" fill="currentColor" stroke="none"/><polygon points="26,20 26,44 46,32" fill="#E8EAEE" stroke="none"/></svg></div>',
+          '  <div class="float-icon f6" style="color: var(--c-orange)"><svg viewBox="0 0 64 64" fill="currentColor"><rect x="6" y="12" width="52" height="40" rx="2"/><rect x="10" y="14" width="6" height="36" fill="#E8EAEE"/><rect x="48" y="14" width="6" height="36" fill="#E8EAEE"/><circle cx="13" cy="22" r="2" fill="currentColor"/><circle cx="13" cy="32" r="2" fill="currentColor"/><circle cx="13" cy="42" r="2" fill="currentColor"/><circle cx="51" cy="22" r="2" fill="currentColor"/><circle cx="51" cy="32" r="2" fill="currentColor"/><circle cx="51" cy="42" r="2" fill="currentColor"/><rect x="20" y="18" width="24" height="28" fill="#E8EAEE"/></svg></div>',
+          '  <div class="float-icon f7" style="color: var(--c-blue)"><svg viewBox="0 0 64 64" fill="currentColor"><path d="M14 8l38 22-16 4 8 18-6 4-8-18-12 12z"/></svg></div>',
+          '  <div class="float-icon f8" style="color: var(--c-magenta)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4"><rect x="6" y="12" width="52" height="40" rx="3" fill="currentColor" stroke="none"/><polyline points="16,28 24,36 16,44" stroke="#E8EAEE" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="28" y1="44" x2="44" y2="44" stroke="#E8EAEE" stroke-width="4" stroke-linecap="round"/></svg></div>',
+          '  <div class="float-icon f9" style="color: var(--c-pink)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 36a24 24 0 0 1 48 0"/><rect x="6" y="34" width="14" height="22" rx="3" fill="currentColor" stroke="none"/><rect x="44" y="34" width="14" height="22" rx="3" fill="currentColor" stroke="none"/></svg></div>',
+          '  <div class="float-icon f10" style="color: var(--c-green)"><svg viewBox="0 0 64 64" fill="currentColor"><polygon points="36,4 12,36 28,36 22,60 50,24 34,24"/></svg></div>',
+          // headline block
+          '  <div class="headline-wrap">',
+          '    <div class="eyebrow"><span class="bracket">[</span> ' + escapeHtml(cfg.site_subtitle || 'Bath Spa University · RAK Campus') + ' <span class="bracket">]</span></div>',
+          '    <h1 class="headline">',
+          '      <span class="row">Dept of <span class="inline-icon" style="color: var(--c-pink)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"><path d="M8 18h10l4-6h20l4 6h10v32H8z"/><circle cx="32" cy="32" r="9" fill="currentColor" stroke="none"/></svg></span> Computing</span>',
+          '      <span class="row">&amp; <span class="inline-icon" style="color: var(--c-yellow)"><svg viewBox="0 0 64 64" fill="currentColor"><path d="M44 8v32.5a10 10 0 1 1-6-9.2V18l-18 4v22.5a10 10 0 1 1-6-9.2V18z"/></svg></span> Media</span>',
+          '    </h1>',
+          '    <p class="tagline">',
+          '      <span class="word"><span class="inline-icon" style="color: var(--c-violet)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><polyline points="22,16 8,32 22,48"/><polyline points="42,16 56,32 42,48"/></svg></span> Code,</span>',
+          '      <span class="word"><span class="inline-icon" style="color: var(--c-cyan)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="5"><rect x="8" y="14" width="48" height="36" rx="3" fill="currentColor" stroke="none"/><circle cx="24" cy="28" r="5" fill="#E8EAEE"/><polyline points="14,46 28,32 42,42 52,34" stroke="#E8EAEE" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span> image,</span>',
+          '      <span class="word"><span class="inline-icon" style="color: var(--c-orange)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><rect x="24" y="8" width="16" height="28" rx="8" fill="currentColor" stroke="none"/><path d="M14 30a18 18 0 0 0 36 0"/><line x1="32" y1="48" x2="32" y2="56"/></svg></span> sound,</span>',
+          '      <span class="word"><span class="inline-icon" style="color: var(--c-green)"><svg viewBox="0 0 64 64" fill="currentColor"><circle cx="32" cy="32" r="26"/><polygon points="26,20 26,44 46,32" fill="#E8EAEE"/></svg></span> story.</span>',
+          '    </p>',
+          '  </div>',
+          // black marquee at bottom — items pulled from _CONFIG.hero_marquee_items
+          // (pipe-separated). Track is duplicated for seamless infinite scroll.
+          '  <div class="marquee"><div class="marquee-track">' + marqueeTrackHtml() + '</div></div>',
+          '</section>'
+        ])
+        .concat([
+          '<section class="vision">',
+          '  <h2>Why <span class="accent">Dept of Computing &amp; Media</span> at Bath Spa University &middot; RAK Campus?</h2>',
+          '  <div class="body">',
+          '    <p>' + escapeHtml(cfg.vision_paragraph_1 || '') + '</p>',
+          '    <p>' + escapeHtml(cfg.vision_paragraph_2 || '') + '</p>',
+          '    <p>' + escapeHtml(cfg.vision_paragraph_3 || '') + '</p>',
+          '  </div>',
+          '</section>'
+        ])
+        .concat(modulesInCurrent.length ? [
+          '<section class="section">',
+          '  <div class="section-header">',
+          '    <h2>Best of <span class="accent-pink">Last Semester</span></h2>',
+          '    <div class="meta">' + escapeHtml(currentSem) + ' · ' + modulesInCurrent.length + ' modules</div>',
+          '  </div>',
+          '  <div class="showcase-grid">',
+              modulesInCurrent.map(function(m) { return showcaseHtml(m); }).join(''),
+          '  </div>',
+          '</section>'
+        ] : [])
+        .concat(allModules.length ? [ allModulesSectionHtml() ] : [])
+        .join('');
+
+      document.getElementById('app').innerHTML = html;
+      // (the old hero used a chromatic-field canvas; the new flicker hero is
+      //  pure CSS so nothing to initialise here)
+    }
+
+    // Build the inner HTML for the hero marquee track. Items come from
+    // _CONFIG.hero_marquee_items as a pipe-separated string (e.g.
+    // "Creative Computing | Digital Storytelling | BSU · RAK Campus").
+    // The list is duplicated inline so the CSS animation can translate
+    // the track by -50% without a visible jump at the loop point.
+    function marqueeTrackHtml() {
+      const cfg = (SITE && SITE.config) || {};
+      let items = [];
+      if (cfg.hero_marquee_items && typeof cfg.hero_marquee_items === 'string') {
+        items = cfg.hero_marquee_items.split('|').map(function(s) { return s.trim(); }).filter(Boolean);
+      }
+      if (!items.length) {
+        items = ['Creative Computing', 'Digital Storytelling', 'Game Design',
+                 'UX & Web', 'Emerging Tech', 'BSU · RAK Campus'];
+      }
+      const single = items.map(function(s) {
+        return '<span class="item">' + escapeHtml(s) + ' <span class="star">&#10022;</span></span>';
+      }).join('');
+      return single + single;
+    }
+
+    function showcaseHtml(module) {
+      const color = colorFor(module.tab_name);
+      const block = module.latest_block;
+      const videos = block.videos;
+      const featured = videos[0];
+      // Always show exactly 4 mini thumbnails to fill the width of the big
+      // featured thumbnail above. If fewer real videos exist, pad with null
+      // placeholders. No horizontal scroll.
+      const TOTAL_MINIS = 4;
+      const actualRest = videos.slice(1, 1 + TOTAL_MINIS);
+      const rest = actualRest.slice();
+      while (rest.length < TOTAL_MINIS) rest.push(null);
+      const cardId = 'sc-' + module.tab_name.replace(/[^A-Za-z0-9]/g, '_');
+      const featuredCaption = (featured.student || 'Untitled') + ' · ' + module.display_name + ' · ' + (block.semester || '');
+
+      return [
+        '<div class="showcase" style="--c:' + color + '">',
+        '  <div class="featured" id="' + cardId + '-f" onclick="openLightbox(\'' + escapeJs(featured.video_id) + '\',\'' + escapeJs(featuredCaption) + '\')">',
+        '    <span class="featured-tag">№ 01 · TOP PICK</span>',
+        '    <img src="' + escapeAttr(featured.thumbnail) + '" alt="" loading="lazy" onerror="this.src=\'https://img.youtube.com/vi/' + escapeJs(featured.video_id) + '/hqdefault.jpg\'">',
+        '    <div class="play-big"></div>',
+        '    <div class="student-tag">' + escapeHtml(featured.student || 'Untitled') + '</div>',
+        '  </div>',
+        '  <div class="module-info">',
+        '    <div class="module-name" onclick="navigateTo(\'module\',\'' + escapeJs(module.tab_name) + '\')">' + escapeHtml(module.display_name) + '</div>',
+        '    <div class="module-meta">',
+        '      <span>' + escapeHtml((block && block.tutor) || module.tutor || '—') + '</span>',
+        '    </div>',
+        '  </div>',
+        '  <div class="filmstrip">',
+            rest.map(function(v) {
+              if (!v) {
+                // empty placeholder — same size as a real mini so the row stays balanced
+                return '<div class="mini empty"><div class="mini-thumb"></div></div>';
+              }
+              const miniCaption = (v.student || 'Untitled') + ' · ' + module.display_name + ' · ' + (block.semester || '');
+              return [
+                '<div class="mini" onclick="openLightbox(\'' + escapeJs(v.video_id) + '\',\'' + escapeJs(miniCaption) + '\')">',
+                '  <div class="mini-thumb">',
+                '    <img src="' + escapeAttr(v.thumbnail) + '" alt="" loading="lazy" onerror="this.src=\'https://img.youtube.com/vi/' + escapeJs(v.video_id) + '/hqdefault.jpg\'">',
+                '    <div class="mini-play"></div>',
+                '  </div>',
+                '  <div class="mini-meta">',
+                '    <span class="pos">№ ' + (v.position < 10 ? '0' : '') + v.position + '</span>',
+                '    <div class="student-mini">' + escapeHtml(v.student || 'Untitled') + '</div>',
+                '    <span class="student-line"></span>',
+                '  </div>',
+                '</div>'
+              ].join('');
+            }).join(''),
+        '  </div>',
+        '  <div class="view-all" onclick="navigateTo(\'module\',\'' + escapeJs(module.tab_name) + '\')">',
+        '    <span>View all ' + videos.length + ' projects</span>',
+        '    <span class="arrow">→</span>',
+        '  </div>',
+        '</div>'
+      ].join('');
+    }
+
+    function moduleNavHtml(module, idx) {
+      const color = colorFor(module.tab_name);
+      const num = (idx + 1).toString().padStart(2, '0');
+      const latestTutor = (module.latest_block && module.latest_block.tutor) || module.tutor || '—';
+      return [
+        '<div class="module-nav" style="--c:' + color + '" onclick="navigateTo(\'module\',\'' + escapeJs(module.tab_name) + '\')">',
+        '  <div class="num">№ ' + num + '</div>',
+        '  <div class="name">' + escapeHtml(module.display_name) + '</div>',
+        '  <div class="tutor">' + escapeHtml(latestTutor) + '</div>',
+        '</div>'
+      ].join('');
+    }
+
+    // ============ MODULE PAGE ============
+    function renderModule(name) {
+      const m = SITE.modules.find(function(x) { return x.tab_name === name; });
+      if (!m) {
+        document.getElementById('app').innerHTML = '<div class="loading">module not found</div>';
+        return;
+      }
+      const color = colorFor(m.tab_name);
+      const blocks = m.all_blocks || [];
+      const totalProjects = blocks.reduce(function(s,b){return s+b.videos.length;},0);
+
+      const html = [
+        '<section class="module-hero" style="--c:' + color + '">',
+        '  <div class="breadcrumb"><a onclick="navigateTo(\'home\')">← Home</a>  /  ' + escapeHtml(m.programme || '') + '</div>',
+        '  <h1>' + escapeHtml(m.display_name) + '</h1>',
+        '  <div class="brief">' + escapeHtml(m.brief || '') + '</div>',
+        '</section>',
+        blocks.map(function(b, i) { return semesterSectionHtml(m, b, i, color); }).join(''),
+        allModulesSectionHtml(m.tab_name)
+      ].join('');
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    // Render the "All Modules" grid as a standalone section. Optional
+    // excludeTabName argument hides the currently-viewed module from
+    // the grid (used on module pages so the visitor only sees OTHER
+    // modules to explore — on the home page the parameter is omitted
+    // so all modules show).
+    function allModulesSectionHtml(excludeTabName) {
+      const list = SITE.modules.filter(function(m) {
+        return m.latest_block && m.latest_block.videos.length && m.tab_name !== excludeTabName;
+      });
+      if (!list.length) return '';
+      const headerLabel = excludeTabName ? 'Explore Other <span class="accent-cyan">Modules</span>' : 'All <span class="accent-cyan">Modules</span>';
+      const metaLabel = excludeTabName
+        ? list.length + ' other module' + (list.length === 1 ? '' : 's') + ' · pick one to explore'
+        : list.length + ' modules · pick one to explore';
+      return [
+        '<section class="section">',
+        '  <div class="section-header">',
+        '    <h2>' + headerLabel + '</h2>',
+        '    <div class="meta">' + metaLabel + '</div>',
+        '  </div>',
+        '  <div class="module-nav-grid">',
+            list.map(function(m, i) { return moduleNavHtml(m, i); }).join(''),
+        '  </div>',
+        '</section>'
+      ].join('');
+    }
+
+    // Size pattern: each "cluster" is one hero (4 cols wide) + two stacked
+    // smalls (2 cols × 2 rows) -> fills the 6 cols with NO gaps. After
+    // that, additional videos lay out in rows of three smalls each.
+    // Leftovers (1 or 2 trailing videos) become size-wide or size-small pair.
+    function assignSizes(count) {
+      const sizes = [];
+      if (count === 0) return sizes;
+      let i = 0;
+
+      // first cluster: hero + 2 smalls if we have at least 3 videos
+      if (count >= 3) {
+        sizes[i++] = 'size-hero';
+        sizes[i++] = 'size-small';
+        sizes[i++] = 'size-small';
+      } else if (count === 2) {
+        // two videos -> hero + one small (small sits beside top half of hero,
+        // small gap below — acceptable for this rare case)
+        sizes[i++] = 'size-hero';
+        sizes[i++] = 'size-small';
+      } else {
+        sizes[i++] = 'size-hero';
+      }
+
+      // remaining videos: rows of three smalls
+      while (i < count) {
+        const remaining = count - i;
+        if (remaining === 1) { sizes[i++] = 'size-wide'; }
+        else if (remaining === 2) { sizes[i++] = 'size-medium'; sizes[i++] = 'size-medium'; }
+        else { sizes[i++] = 'size-small'; sizes[i++] = 'size-small'; sizes[i++] = 'size-small'; }
+      }
+      return sizes.slice(0, count);
+    }
+
+    // tile colors — deep enough to read on white,
+    // used for the play button outline, position tag, and the ribbon.
+    const PASTELS = [
+      "#E8527E",  // rose
+      "#7C5CD6",  // violet
+      "#D69A1E",  // amber
+      "#2E8BB0",  // ocean blue
+      "#C2487E",  // berry
+      "#3FA06A",  // green
+      "#C26A3E",  // terracotta
+      "#5566C4"   // indigo
+    ];
+    function pastelFor(idx) { return PASTELS[idx % PASTELS.length]; }
+
+    function semesterSectionHtml(module, block, idx, color) {
+      const sizes = assignSizes(block.videos.length);
+      const cards = block.videos.map(function(v, vi) {
+        const cardId = 'mv-' + module.tab_name.replace(/[^A-Za-z0-9]/g, '_') + '-' + v.video_id + '-' + v.position;
+        const size = sizes[vi] || 'size-small';
+        const tile = pastelFor(vi);
+        const studentName = v.student || 'Untitled';
+        // build a caption for the lightbox: "Student · Module · Semester"
+        const captionParts = [studentName, module.display_name, block.semester || ''].filter(Boolean);
+        const caption = captionParts.join(' · ');
+        return [
+          '<div class="masonry-card ' + size + '" style="--c:' + color + ';--tile:' + tile + '" id="' + cardId + '">',
+          '  <div class="v-thumb" onclick="openLightbox(\'' + escapeJs(v.video_id) + '\',\'' + escapeJs(caption) + '\')">',
+          '    <span class="pos-tag">№ ' + (v.position < 10 ? '0' : '') + v.position + '</span>',
+          '    <img src="' + escapeAttr(v.thumbnail) + '" alt="" loading="lazy" onerror="this.src=\'https://img.youtube.com/vi/' + escapeJs(v.video_id) + '/hqdefault.jpg\'">',
+          '    <div class="v-play"></div>',
+          '  </div>',
+          '  <div class="v-name">' + escapeHtml(studentName) + '</div>',
+          '</div>'
+        ].join('');
+      }).join('');
+      const muted = idx > 0 ? ' muted' : '';
+      const blockTutor = block.tutor || module.tutor || '';
+      return [
+        '<section class="semester-section' + muted + '" style="--c:' + color + '">',
+        '  <div class="sem-head">',
+        '    <h3><span class="accent">' + escapeHtml(block.semester || '') + '</span> &nbsp; — &nbsp; with ' + escapeHtml(blockTutor) + '</h3>',
+        '    <span class="sem-meta">' + block.videos.length + ' project' + (block.videos.length === 1 ? '' : 's') + '</span>',
+        '  </div>',
+        '  <div class="masonry">' + cards + '</div>',
+        '</section>'
+      ].join('');
+    }
+
+    // ============ LIGHTBOX ============
+    function openLightbox(videoId, caption) {
+      const lb = document.getElementById('lightbox');
+      const host = document.getElementById('lb-iframe-host');
+      const cap  = document.getElementById('lb-caption');
+      if (!lb || !host) return;
+      host.innerHTML = '<iframe src="https://www.youtube.com/embed/' + videoId +
+        '?autoplay=1&rel=0&modestbranding=1" ' +
+        'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      if (cap) cap.textContent = caption || '';
+      lb.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox(evt) {
+      if (evt && evt.stopPropagation) evt.stopPropagation();
+      const lb = document.getElementById('lightbox');
+      const host = document.getElementById('lb-iframe-host');
+      if (!lb) return;
+      lb.classList.remove('open');
+      if (host) host.innerHTML = '';   // stop video
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeLightbox();
+    });
+
+    function escapeHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+        return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c];
+      });
+    }
+    function escapeAttr(s) { return escapeHtml(s); }
+    function escapeJs(s) {
+      return String(s == null ? '' : s).replace(/['"\\]/g, function(c) { return '\\' + c; });
+    }
+
+    // =================================================================
+    // AMBIENT MUSIC — internet radio stream, play/stop toggle
+    // =================================================================
+    // The audio element sits OUTSIDE #app so it survives every renderHome
+    // / renderModule call (which rewrites #app.innerHTML). The user can
+    // start it on the homepage and it keeps playing as they browse
+    // into module pages and back.
+    //
+    // Browsers require a user gesture before they'll start audio with
+    // sound, which is why this is a button rather than autoplay.
+    // =================================================================
+    const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6,4 20,12 6,20" fill="currentColor" stroke="none"/></svg>';
+    const ICON_STOP = '<svg viewBox="0 0 24 24" fill="currentColor"><rect class="bar bar1" x="3"  y="9"  width="3" height="6"/><rect class="bar bar2" x="8"  y="4"  width="3" height="16"/><rect class="bar bar3" x="13" y="7"  width="3" height="10"/><rect class="bar bar4" x="18" y="10" width="3" height="4"/></svg>';
+    const ICON_LOAD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9" stroke-dasharray="14 8"/></svg>';
+
+    const audioEl = document.getElementById('ambient-audio');
+    const musicBtn = document.getElementById('music-toggle');
+    const musicIcon = document.getElementById('music-icon');
+    const musicLabel = document.getElementById('music-label');
+    let musicPlaying = false;
+    let musicLoading = false;
+
+    function musicCfg() {
+      const c = (SITE && SITE.config) ? SITE.config : {};
+      return {
+        url:   c.homepage_music_url   || 'https://ice1.somafm.com/beatblender-128-mp3',
+        label: c.homepage_music_label || 'SomaFM · Beat Blender'
+      };
+    }
+    function setMusicSrcIfNeeded() {
+      const cfg = musicCfg();
+      if (!audioEl.src) audioEl.src = cfg.url;
+    }
+    function updateMusicUI() {
+      const cfg = musicCfg();
+      if (musicLoading) {
+        musicIcon.innerHTML = ICON_LOAD;
+        musicLabel.textContent = 'CONNECTING…';
+        musicBtn.classList.remove('playing');
+        musicBtn.classList.add('loading');
+      } else if (musicPlaying) {
+        musicIcon.innerHTML = ICON_STOP;
+        musicLabel.textContent = cfg.label;
+        musicBtn.classList.add('playing');
+        musicBtn.classList.remove('loading');
+        musicBtn.setAttribute('aria-label', 'Stop ambient music');
+      } else {
+        musicIcon.innerHTML = ICON_PLAY;
+        musicLabel.textContent = 'MUSIC';
+        musicBtn.classList.remove('playing', 'loading');
+        musicBtn.setAttribute('aria-label', 'Play ambient music');
+      }
+    }
+    musicBtn.addEventListener('click', function() {
+      if (musicPlaying) {
+        audioEl.pause();
+        musicPlaying = false;
+        updateMusicUI();
+        return;
+      }
+      setMusicSrcIfNeeded();
+      musicLoading = true;
+      updateMusicUI();
+      const p = audioEl.play();
+      if (p && p.then) {
+        p.then(function() {
+          musicLoading = false;
+          musicPlaying = true;
+          updateMusicUI();
+        }).catch(function(err) {
+          console.warn('audio play blocked or failed:', err);
+          musicLoading = false;
+          musicPlaying = false;
+          updateMusicUI();
+        });
+      } else {
+        musicLoading = false;
+        musicPlaying = true;
+        updateMusicUI();
+      }
+    });
+    audioEl.addEventListener('pause', function() { musicPlaying = false; updateMusicUI(); });
+    audioEl.addEventListener('ended', function() { musicPlaying = false; updateMusicUI(); });
+    audioEl.addEventListener('error', function() {
+      console.warn('audio error');
+      musicLoading = false;
+      musicPlaying = false;
+      updateMusicUI();
+    });
+    updateMusicUI();
+
+    // =================================================================
+    // SCROLL TO TOP — fade-in button at bottom-right
+    // =================================================================
+    const scrollTopBtn = document.getElementById('scroll-top');
+    function updateScrollTopVisibility() {
+      if (window.scrollY > 400) {
+        scrollTopBtn.classList.add('visible');
+      } else {
+        scrollTopBtn.classList.remove('visible');
+      }
+    }
+    window.addEventListener('scroll', updateScrollTopVisibility, { passive: true });
+    scrollTopBtn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    updateScrollTopVisibility();
+
+    load();
+  </script>
+</body>
+</html>
