@@ -557,18 +557,41 @@
       display: inline-flex; align-items: center; gap: 4px;
     }
     .showcase .featured .featured-tag .eye { font-size: 10px; opacity: 0.85; }
-    /* Featured ribbon — solid module-colour band at the bottom of the
-       big thumbnail with the student name in white. Different colour per
-       showcase so the row reads colourful. */
-    .showcase .featured .student-tag {
+    /* Cinematic name overlay — the featured student name sits on top of
+       the thumbnail, with a soft dark gradient behind it to keep the text
+       legible regardless of the underlying image. A small marker line in
+       the module colour sits above the name as the only colour cue. */
+    .showcase .featured::after {
+      content: '';
       position: absolute; bottom: 0; left: 0; right: 0;
-      background: var(--c, var(--c-pink));
-      color: #FFFFFF;
-      font-family: var(--font-display); font-weight: 800;
-      font-size: 22px;
-      padding: 14px 22px;
-      letter-spacing: -0.01em;
+      height: 50%;
+      background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.85));
+      pointer-events: none;
+      z-index: 1;
+    }
+    .showcase .featured .overlay-name {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 20px 20px 16px;
       z-index: 2;
+      pointer-events: none;
+    }
+    .showcase .featured .overlay-name .marker {
+      display: block;
+      width: 30px; height: 3px;
+      background: var(--c, var(--c-pink));
+      margin-bottom: 8px;
+    }
+    .showcase .featured .overlay-name .name-text {
+      color: #FFFFFF;
+      font-family: var(--font-display); font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.4);
     }
 
     .showcase .module-info {
@@ -1729,7 +1752,10 @@
         '    ' + featuredLink,
         '    <img src="' + escapeAttr(featured.thumbnail) + '" alt="" loading="lazy" onerror="this.src=\'https://img.youtube.com/vi/' + escapeJs(featured.video_id) + '/hqdefault.jpg\'">',
         '    <div class="play-big"></div>',
-        '    <div class="student-tag">' + escapeHtml(featured.student || 'Untitled') + '</div>',
+        '    <div class="overlay-name">',
+        '      <span class="marker"></span>',
+        '      <span class="name-text">' + escapeHtml(featured.student || 'Untitled') + '</span>',
+        '    </div>',
         '  </div>',
         '  <div class="module-info">',
         '    <div class="module-name" onclick="navigateTo(\'module\',\'' + escapeJs(module.tab_name) + '\')">' + escapeHtml(module.display_name) + '</div>',
