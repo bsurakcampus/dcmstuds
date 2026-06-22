@@ -865,6 +865,19 @@
     color: white; font-family: var(--font-display);
     font-size: 20px;
   }
+  /* Make the inner host fill the content box so iframes and carousel
+     images can size themselves to 100% reliably. */
+  .lightbox #lb-host {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%;
+  }
+  .lightbox.carousel-mode #lb-host {
+    position: relative;
+    display: block;
+    width: auto; height: auto;
+  }
   /* Carousel mode — image fits naturally, no aspect lock, no bg */
   .lightbox.carousel-mode .lb-content {
     aspect-ratio: unset;
@@ -986,14 +999,14 @@
   // ============================================================
   // SITE data loader — paste your Apps Script /exec URL below.
   // ============================================================
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyjBG-LPU5Ve3XeUIQfAcPARlKXHMkDBBc_p-z7kTuhMb421Qx73k96txl-hzkk8nPc/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIn2-sLcDhG7N3BWfa8tZoh6mY4zrRQsYFokYB08LTW-qckuDZ162jETzJghxkLHtG/exec';
   let SITE = null;
   let LOAD_ERROR = null;
   let LOAD_ERROR_WHERE = null;
 
   async function loadSiteData() {
     if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PASTE') === 0) {
-      LOAD_ERROR = 'Apps Script URL not set in index.html.';
+      LOAD_ERROR = 'Apps Script URL not set in index.html (line near the top of the script block).';
       renderRoute();
       return;
     }
@@ -1001,7 +1014,10 @@
       const res = await fetch(APPS_SCRIPT_URL, { method: 'GET' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
-      if (data.error) { LOAD_ERROR_WHERE = data.where || null; throw new Error(data.error); }
+      if (data && data.error) {
+        LOAD_ERROR_WHERE = data.where || null;
+        throw new Error(data.error);
+      }
       SITE = data;
       renderRoute();
     } catch (err) {
@@ -1076,14 +1092,19 @@
     if (LOAD_ERROR) { renderHome(); return; }
     const r = currentRoute();
     if (r.type === 'post') {
-      const post = SITE.posts.find(p => p.slug === r.slug);
+      const post = SITE.posts && SITE.posts.find(p => p.slug === r.slug);
       if (post) renderArticle(post);
       else renderHome();
     } else if (r.type === 'module') {
-      // For module page we look up in moduleFull which has ALL semester data
+      // Try moduleFull first (full semester data), then modules (home data),
+      // then allModules (just the name + tab — minimal empty page so the
+      // click lands somewhere meaningful even if data is incomplete).
       const fullMod = SITE.moduleFull && SITE.moduleFull[r.name];
-      const homeMod = SITE.modules.find(m => m.tab_name === r.name);
-      const mod = fullMod || homeMod;
+      const homeMod = SITE.modules    && SITE.modules.find(m => m.tab_name === r.name);
+      const allMod  = SITE.allModules && SITE.allModules.find(m => m.tab_name === r.name);
+      const mod = fullMod || homeMod || (allMod
+        ? { tab_name: allMod.tab_name, display_name: allMod.display_name, tagline: '', color: '#FF2E9A', tutor: '', semesters: [] }
+        : null);
       if (mod) renderModule(mod);
       else renderHome();
     } else {
@@ -1122,6 +1143,7 @@
       return;
     }
     const cfg = SITE.config;
+    updateBrand(cfg);
     const featuredPosts = SITE.posts.filter(p => p.featured).slice(0, 4);
     const allPosts = filterPosts(currentFilter);
     const counts = {
@@ -1330,7 +1352,6 @@
   // MODULE PAGE — semester + brick gallery for one module
   // =================================================================
   function renderModule(mod) {
-    if (SITE && SITE.config) updateBrand(SITE.config);
     if (LOAD_ERROR) {
       document.getElementById('app').innerHTML = '<div style="padding:120px 60px;text-align:center;font-family:var(--font-display);color:var(--ink-soft)"><div style="font-size:42px;font-weight:900;color:var(--ink);margin-bottom:18px;letter-spacing:-0.02em">Site data could not load.</div><div style="font-size:14px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.1em">' + escapeHtml(LOAD_ERROR) + '</div>' + (LOAD_ERROR_WHERE ? '<div style="margin-top:14px;font-size:11px;font-family:var(--font-mono);color:var(--ink-faint);letter-spacing:0.1em;max-width:900px;margin-left:auto;margin-right:auto;word-break:break-all">' + escapeHtml(LOAD_ERROR_WHERE) + '</div>' : '') + '<div style="margin-top:30px;font-size:11px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.16em;text-transform:uppercase">Check the Apps Script URL in index.html and the sheet permissions.</div></div>';
       return;
@@ -1339,9 +1360,12 @@
       document.getElementById('app').innerHTML = '<div style="padding:160px 60px;text-align:center;font-family:var(--font-mono);color:var(--ink-mute);font-size:11px;letter-spacing:0.24em;text-transform:uppercase">Loading…</div>';
       return;
     }
-
-    // Build list of videos in the order: featured, then minis
-    const videos = [mod.featured].concat(mod.minis);
+    if (SITE && SITE.config) updateBrand(SITE.config);
+    // If full data is present (semesters[]), use that; else use featured+minis
+    const useSems = Array.isArray(mod.semesters) && mod.semesters.length > 0;
+    const videos = useSems
+      ? mod.semesters[0].videos
+      : [mod.featured].concat(mod.minis || []).filter(Boolean);
     document.getElementById('app').innerHTML = [
       '<div class="module-page">',
       '  <div class="module-nav-row">',
@@ -1384,7 +1408,6 @@
   // ARTICLE PAGE
   // =================================================================
   function renderArticle(post) {
-    if (SITE && SITE.config) updateBrand(SITE.config);
     if (LOAD_ERROR) {
       document.getElementById('app').innerHTML = '<div style="padding:120px 60px;text-align:center;font-family:var(--font-display);color:var(--ink-soft)"><div style="font-size:42px;font-weight:900;color:var(--ink);margin-bottom:18px;letter-spacing:-0.02em">Site data could not load.</div><div style="font-size:14px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.1em">' + escapeHtml(LOAD_ERROR) + '</div>' + (LOAD_ERROR_WHERE ? '<div style="margin-top:14px;font-size:11px;font-family:var(--font-mono);color:var(--ink-faint);letter-spacing:0.1em;max-width:900px;margin-left:auto;margin-right:auto;word-break:break-all">' + escapeHtml(LOAD_ERROR_WHERE) + '</div>' : '') + '<div style="margin-top:30px;font-size:11px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.16em;text-transform:uppercase">Check the Apps Script URL in index.html and the sheet permissions.</div></div>';
       return;
@@ -1393,7 +1416,7 @@
       document.getElementById('app').innerHTML = '<div style="padding:160px 60px;text-align:center;font-family:var(--font-mono);color:var(--ink-mute);font-size:11px;letter-spacing:0.24em;text-transform:uppercase">Loading…</div>';
       return;
     }
-
+    if (SITE && SITE.config) updateBrand(SITE.config);
     const dateFull = new Date(post.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
     const readTime = Math.max(1, Math.ceil((post.body || '').split(/\s+/).length / 200));
     // Park the gallery array on window so the inline onclick can read it
@@ -1480,12 +1503,12 @@
       // Normalise: accept watch?v= or youtu.be or embed/, always emit /embed/
       var m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|watch\?v=|.*[?&]v=))([\w-]{11})/);
       var id = m ? m[1] : (url.length === 11 ? url : '');
+      var iframeStyle = "position:absolute;top:0;left:0;width:100%;height:100%;border:0";
       if (id) {
         host.innerHTML = '<iframe src="https://www.youtube.com/embed/' + id
-          + '?autoplay=1&rel=0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen frameborder="0" style="width:100%;height:100%;border:0"></iframe>';
+          + '?autoplay=1&rel=0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen frameborder="0" style="' + iframeStyle + '"></iframe>';
       } else {
-        // Non-YouTube URL — try as a generic embed
-        host.innerHTML = '<iframe src="' + url + '" allow="autoplay; fullscreen" allowfullscreen frameborder="0" style="width:100%;height:100%;border:0;background:#000"></iframe>';
+        host.innerHTML = '<iframe src="' + url + '" allow="autoplay; fullscreen" allowfullscreen frameborder="0" style="' + iframeStyle + ';background:#000"></iframe>';
       }
     }
     document.getElementById('lb-caption').textContent = caption || '';
