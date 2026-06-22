@@ -1244,7 +1244,7 @@
       '</section>',
 
       // ALL POSTS archive with filter chips
-      '<section class="section">',
+      '<section class="section" id="posts-section">',
       '  <div class="section-header">',
       '    <h2>All <span class="accent">Posts</span></h2>',
       '    <div class="meta">' + counts.all + ' posts · filter by type</div>',
@@ -1292,14 +1292,25 @@
   function setFilter(filter) {
     currentFilter = filter;
     renderHome();
-    // scroll to All Posts section
-    const sections = document.querySelectorAll('.section');
-    for (const s of sections) {
-      if (s.querySelector('.section-header h2')?.textContent.includes('Posts')) {
-        s.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        break;
-      }
+    // Scroll to All Posts. The DOM was just rebuilt and images load
+    // async on mobile, so the section's Y position shifts as images
+    // load. Smooth-scroll first (good UX), then snap-correct after
+    // a delay to ensure we end up exactly at the section.
+    function postsY() {
+      const el = document.getElementById('posts-section');
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return r.top + window.scrollY - 20;  // 20px breathing room above
     }
+    requestAnimationFrame(function() {
+      const y1 = postsY();
+      if (y1 != null) window.scrollTo({ top: y1, behavior: 'smooth' });
+      // 800ms later, recompute and snap to correct any image-load shifts
+      setTimeout(function() {
+        const y2 = postsY();
+        if (y2 != null) window.scrollTo({ top: y2, behavior: 'auto' });
+      }, 800);
+    });
   }
 
   // =================================================================
