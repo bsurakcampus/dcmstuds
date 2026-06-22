@@ -62,23 +62,6 @@
     cursor: pointer; color: var(--ink);
   }
   .brand span { color: var(--accent); }
-  .music-toggle {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 26px; height: 26px;
-    background: rgba(255,255,255,0.92);
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-  }
-  .music-toggle::after {
-    content: '';
-    border-left: 8px solid currentColor;
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-    margin-left: 2px;
-  }
-  .music-toggle:hover { background: var(--accent); color: #FFFFFF; }
 
   /* SCROLL-TO-TOP — floating button vertically aligned with the music
      button (same right offset as the topbar's right padding). Hidden by
@@ -978,7 +961,6 @@
 
 <header class="topbar">
   <div class="brand" onclick="navigateTo('home')">DCM<span>·</span>BSURAK</div>
-  <div class="music-toggle" title="Play ambient music"></div>
 </header>
 
 <!-- Floating scroll-to-top, visible after 50% scroll -->
@@ -1003,7 +985,7 @@
   // =================================================================
   // SITE data is loaded from Google Apps Script at boot.
   // Replace APPS_SCRIPT_URL with your /exec deployment URL.
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyjBG-LPU5Ve3XeUIQfAcPARlKXHMkDBBc_p-z7kTuhMb421Qx73k96txl-hzkk8nPc/exec';
+  const APPS_SCRIPT_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
   let SITE = null;
   let LOAD_ERROR = null;
 
@@ -1213,9 +1195,13 @@
       '    <div class="meta">' + SITE.allModules.length + ' modules · pick one to explore</div>',
       '  </div>',
       '  <div class="module-nav-grid">',
-      SITE.allModules.map((m, i) => '<div class="module-card" onclick="alert(\'Module page: ' + escapeJs(m.name) + '\')">'
-        + '<div class="name">' + escapeHtml(m.name) + '</div>'
-        + '</div>').join(''),
+      SITE.allModules.map(function(m) {
+        var name = m.display_name || m.tab_name || m.name || '';
+        var tab  = m.tab_name || m.display_name || m.name || '';
+        return '<div class="module-card" onclick="navigateTo(\'module\',\'' + escapeJs(tab) + '\')">'
+          + '<div class="name">' + escapeHtml(name) + '</div>'
+          + '</div>';
+      }).join(''),
       '  </div>',
       '</section>',
 
@@ -1254,7 +1240,7 @@
       : '';
     return [
       '<div class="showcase" style="--c:' + module.color + '">',
-      '  <div class="featured" onclick="openLightbox(\'' + escapeJs(module.featured.student) + ' · ' + escapeJs(module.display_name) + '\')">',
+      '  <div class="featured" onclick="openLightbox(\'' + escapeJs((module.featured && module.featured.youtube) || '') + '\',\'' + escapeJs((module.featured && module.featured.student) || '') + ' · ' + escapeJs(module.display_name) + '\')">',
       '    ' + featLink,
       '    <img src="' + module.featured.thumb + '" alt="" loading="lazy">',
       '    <div class="play"></div>',
@@ -1268,7 +1254,7 @@
       '    <div class="tutor">' + escapeHtml(module.tutor) + '</div>',
       '  </div>',
       '  <div class="strip">',
-      module.minis.map(m => '<div class="mini-card" onclick="openLightbox(\'' + escapeJs(m.student) + ' · ' + escapeJs(module.display_name) + '\')"><div class="mini"><img src="' + m.thumb + '" alt=""></div><div class="mini-name">' + escapeHtml(m.student) + '</div></div>').join(''),
+      module.minis.map(m => '<div class="mini-card" onclick="openLightbox(\'' + escapeJs(m.youtube || '') + '\',\'' + escapeJs(m.student) + ' · ' + escapeJs(module.display_name) + '\')"><div class="mini"><img src="' + m.thumb + '" alt=""></div><div class="mini-name">' + escapeHtml(m.student) + '</div></div>').join(''),
       Array(Math.max(0, 3 - module.minis.length)).fill('<div class="mini-card empty"><div class="mini"></div><div class="mini-name">·</div></div>').join(''),
       '  </div>',
       '  <div class="view-all" onclick="navigateTo(\'module\',\'' + escapeJs(module.tab_name) + '\')"><span>View all ' + (module.minis.length + 1) + ' projects</span><span>→</span></div>',
@@ -1361,7 +1347,7 @@
       '    </div>',
       '    <div class="masonry">',
       videos.map((v, i) => {
-        return '<div class="masonry-card" style="--c:' + mod.color + '" onclick="openLightbox(\'' + escapeJs(v.student) + ' · ' + escapeJs(mod.display_name) + '\')">'
+        return '<div class="masonry-card" style="--c:' + mod.color + '" onclick="openLightbox(\'' + escapeJs(v.youtube || '') + '\',\'' + escapeJs(v.student) + ' · ' + escapeJs(mod.display_name) + '\')">'
           + '<div class="v-thumb">'
           + '<img src="' + (v.thumb || 'https://picsum.photos/seed/' + i + '/800/450') + '" alt="" loading="lazy">'
           + '<div class="v-play"></div>'
@@ -1468,9 +1454,24 @@
   let carouselImages = [];
   let carouselIndex = 0;
 
-  function openLightbox(caption) {
+  function openLightbox(videoUrl, caption) {
     document.getElementById('lightbox').classList.remove('carousel-mode');
-    document.getElementById('lb-host').innerHTML = '▶ Video player placeholder';
+    var host = document.getElementById('lb-host');
+    var url = String(videoUrl || '').trim();
+    if (!url) {
+      host.innerHTML = '<div style="color:#fff;padding:40px;font-family:var(--font-display);font-size:18px;opacity:0.7">No video URL available</div>';
+    } else {
+      // Normalise: accept watch?v= or youtu.be or embed/, always emit /embed/
+      var m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|watch\?v=|.*[?&]v=))([\w-]{11})/);
+      var id = m ? m[1] : (url.length === 11 ? url : '');
+      if (id) {
+        host.innerHTML = '<iframe src="https://www.youtube.com/embed/' + id
+          + '?autoplay=1&rel=0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen frameborder="0" style="width:100%;height:100%;border:0"></iframe>';
+      } else {
+        // Non-YouTube URL — try as a generic embed
+        host.innerHTML = '<iframe src="' + url + '" allow="autoplay; fullscreen" allowfullscreen frameborder="0" style="width:100%;height:100%;border:0;background:#000"></iframe>';
+      }
+    }
     document.getElementById('lb-caption').textContent = caption || '';
     document.getElementById('lightbox').classList.add('open');
   }
