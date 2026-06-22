@@ -1,2404 +1,1564 @@
-<!--
-  dcmstuds v1.5 — PRODUCTION
-  ================================================================
-  Standalone HTML for static hosting (GitHub Pages, Netlify, etc.).
-  Fetches site data from a deployed Google Apps Script web app
-  (the /exec URL). See the APPS_SCRIPT_URL constant in the <script>
-  block below — paste your deployment URL there.
-
-  When you publish a new version of the Apps Script, edit the
-  existing deployment (Deploy → Manage deployments → pencil icon
-  → New version) so the /exec URL stays the same and this HTML
-  file doesn't need updating.
-
-  For local development with sample data, use index.local.html
-  (which has hardcoded mock data and doesn't need the API).
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>DCM Studs · LOCAL DEV</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #FFFFFF;
-      --bg-soft: #F6F4EF;
-      --bg-card: #FFFFFF;
-      --ink: #0F0F0F;
-      --ink-soft: #4D4D4D;
-      --ink-mute: #8A8A8A;
-      --line: #E5E2DC;
-      --line-strong: #CFCBC2;
-      --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
-      --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+<meta charset="UTF-8">
+<title>DCM·BSURAK — 21 June Edition</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFFFFF;
+    --bg-soft: #FAF8F2;
+    --bg-card: #FFFFFF;
+    --bg-card-hover: #F4F1EA;
+    --ink: #0F0F0F;
+    --ink-soft: #4D4D4D;
+    --ink-mute: #8A8A8A;
+    --ink-faint: #B0AC9F;
+    --line: #E5E2DC;
+    --line-strong: #B8B3A8;
+    --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
 
-      /* VIVID-ON-WHITE PALETTE */
-      --c-pink:    #FF2E9A;
-      --c-orange:  #FF5500;
-      --c-yellow:  #F0C000;
-      --c-green:   #00C265;
-      --c-cyan:    #0095C5;
-      --c-blue:    #3D5BFF;
-      --c-violet:  #8B2FFF;
-      --c-magenta: #E0008E;
-    }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: var(--font-mono); font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
-    a { color: var(--c-pink); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    /* sparing accent — used in section heading highlights, link icons,
+       drop caps, and small markers only. No filled colour blocks. */
+    --accent: #FF2E9A;
 
-    /* ========== TOPBAR ========== */
-    .topbar {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      background: rgba(255,255,255,0.82);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--line);
-      padding: 14px 14px 14px 32px;
-      display: flex; align-items: center; gap: 24px;
-      font-size: 13px;
-    }
-    .topbar .brand { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.01em; color: var(--ink); cursor: pointer; }
-    .topbar .brand span { color: var(--c-pink); }
-    .topbar .local-tag { font-family: var(--font-mono); font-size: 9px; color: var(--c-pink); border: 1px solid var(--c-pink); padding: 2px 6px; letter-spacing: 0.15em; }
-    .topbar nav { display: flex; gap: 18px; flex-wrap: wrap; flex: 1; margin-left: 8px; }
-    .topbar nav a {
-      color: var(--ink-soft); font-size: 12px; text-transform: uppercase;
-      letter-spacing: 0.04em; cursor: pointer; padding: 4px 0;
-      border-bottom: 1px solid transparent; transition: color 0.15s, border-color 0.15s;
-    }
-    .topbar nav a:hover, .topbar nav a.active { color: var(--c-pink); border-bottom-color: var(--c-pink); text-decoration: none; }
-    .topbar .refresh {
-      background: none; border: 1px solid var(--line-strong); color: var(--ink-soft);
-      font-family: var(--font-mono); font-size: 11px;
-      padding: 5px 10px; cursor: pointer; border-radius: 2px;
-    }
-    .topbar .refresh:hover { color: var(--c-blue); border-color: var(--c-blue); }
+    /* per-module accents — restrained, used only for small markers
+       (overlay name line, link icon hover) NOT as card backgrounds */
+    --c-pink:   #FF2E9A;
+    --c-cyan:   #0095C5;
+    --c-violet: #8B2FFF;
+    --c-orange: #FF5500;
+    --c-green:  #00C265;
+    --c-yellow: #C99500;
+    --c-blue:   #3D5BFF;
+    --c-magenta:#E0008E;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: var(--font-mono); font-size: 14px; line-height: 1.5; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  img { display: block; }
 
-    main { width: 100%; margin: 0; padding: 0 0 100px; }
+  /* ============================================================
+     TOPBAR
+     ============================================================ */
+  header.topbar {
+    position: sticky; top: 0;
+    z-index: 100;
+    padding: 14px 60px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .brand {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 16px; letter-spacing: -0.01em;
+    cursor: pointer; color: var(--ink);
+  }
+  .brand span { color: var(--accent); }
+  .music-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px;
+    background: rgba(255,255,255,0.92);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .music-toggle::after {
+    content: '';
+    border-left: 8px solid currentColor;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    margin-left: 2px;
+  }
+  .music-toggle:hover { background: var(--accent); color: #FFFFFF; }
 
-    /* ========== HERO — Scheme B (cool light) with bulb-flicker ========== */
-    /* The hero is a self-contained colour-blocked section: cool pale grey
-       background, giant white STUDS in the centre breathing on a 6s flicker
-       cycle, the headline (with inline tech icons) flickering on a separate
-       12s rhythm with long rest periods, ten decorative tech icons floating
-       in the corners, a black marquee at the bottom marking the boundary
-       to the white site below. */
-    .hero {
-      position: relative;
-      width: 100%;
-      min-height: 100vh;
-      min-height: 100dvh;
-      margin: 0;
-      padding: 96px 60px 0;           /* leave room for the fixed topbar */
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      background: #E8EAEE;            /* Scheme B cool light */
-      color: #0F1116;
-      cursor: default;
-      border-bottom: 1px solid var(--line);
-    }
-    /* hero-local palette tokens (don't override :root) */
-    .hero {
-      --hero-bg:       #E8EAEE;
-      --hero-ink:      #0F1116;
-      --hero-ink-soft: #4D5260;
-      --hero-ink-mute: #8A8E99;
-    }
+  /* SCROLL-TO-TOP — floating button vertically aligned with the music
+     button (same right offset as the topbar's right padding). Hidden by
+     default; appears with a fade once the user has scrolled past 50% of
+     the viewport. Sits at the bottom-right of the screen. */
+  .scroll-top-fab {
+    position: fixed;
+    bottom: 28px;
+    right: 60px;
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(8px);
+    transition: opacity 0.25s, transform 0.25s, background 0.15s, color 0.15s;
+  }
+  .scroll-top-fab.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .scroll-top-fab::after {
+    content: '↑';
+    font-size: 18px; line-height: 1;
+    font-weight: 700;
+  }
+  .scroll-top-fab:hover { background: var(--ink); color: #FFFFFF; }
+  @media (max-width: 700px) {
+    .scroll-top-fab { right: 22px; bottom: 22px; width: 32px; height: 32px; }
+  }
 
-    /* eyebrow [ Bath Spa University · RAK Campus ] — sits just under the topbar */
-    .hero .eyebrow {
-      position: absolute;
-      top: 78px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 6;
-      font-family: var(--font-mono);
-      font-size: 13px;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      color: var(--hero-ink-soft);
-      margin: 0;
-      white-space: nowrap;
-    }
-    .hero .eyebrow .bracket { color: var(--hero-ink-mute); }
+  /* ============================================================
+     HERO — clean typographic. NO STUDS ghost word.
+     ============================================================ */
+  /* HERO — white, compact. Titles sit high; ~30% shorter than first
+     pass. Top padding aggressively reduced to lift the eyebrow up. */
+  .hero {
+    position: relative;
+    padding: 44px 60px 60px;
+    background: var(--bg);
+    overflow: hidden;
+  }
+  .hero .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px; letter-spacing: 0.24em;
+    color: var(--ink-mute); text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero .eyebrow .bracket { color: var(--ink-faint); }
+  .hero h1 {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(44px, 7vw, 108px);
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    margin: 0 0 20px;
+    max-width: 1400px;
+  }
+  .hero h1 .accent { color: var(--accent); }
+  .hero .tagline {
+    font-family: var(--font-display); font-weight: 500;
+    font-size: clamp(17px, 1.4vw, 22px);
+    color: var(--ink-soft);
+    line-height: 1.4;
+    margin: 0;
+  }
+  /* Marquee — gray strip below the white hero. Borders kept subtle
+     since the colour shift already provides visual separation. */
+  .hero-marquee {
+    background: #E8EAEE;
+    border-top: 1px solid rgba(0,0,0,0.04);
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    padding: 18px 0;
+    font-family: var(--font-mono); font-size: 12px;
+    color: var(--ink-soft); letter-spacing: 0.22em;
+    text-transform: uppercase;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .hero-marquee .track {
+    display: inline-block;
+    animation: scroll 40s linear infinite;
+    padding-right: 60px;
+  }
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
 
-    /* centred headline block */
-    .hero .headline-wrap {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      z-index: 5;
-      position: relative;
-      padding: 60px 0 100px;
-    }
-    .hero h1.headline {
-      font-family: var(--font-display);
-      font-weight: 900;
-      font-size: clamp(48px, 9vw, 144px);
-      line-height: 1.0;
-      letter-spacing: -0.035em;
-      color: var(--hero-ink);
-      max-width: 1500px;
-      margin: 0 0 36px;
-      animation: headline-flicker 12s linear infinite;
-      will-change: opacity;
-    }
-    .hero h1.headline .row { display: block; }
+  /* ============================================================
+     WHY DCM SECTION — Q&A framing
+     ============================================================ */
+  .why-section {
+    padding: 100px 60px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  .why-section .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px; letter-spacing: 0.24em;
+    color: var(--accent); text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 22px;
+  }
+  .why-section h2 {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(40px, 5.2vw, 76px);
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    margin: 0 0 50px;
+    max-width: 1500px;
+    color: var(--ink);
+  }
+  .why-section h2 .accent { color: var(--accent); }
+  /* Why DCM body — 3 equal columns filling the full available width
+     inside the section's 60px padding. No max-width cap. */
+  .why-section .body {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 48px;
+  }
+  .why-section .body p {
+    font-family: var(--font-display);
+    font-size: 17px; line-height: 1.65;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+  .why-section .body p strong {
+    color: var(--ink); font-weight: 700;
+  }
 
-    .hero .inline-icon {
-      display: inline-flex;
-      align-items: center; justify-content: center;
-      vertical-align: middle;
-      width: 0.95em; height: 0.95em;
-      margin: 0 0.08em;
-      transform: translateY(-0.04em);
-    }
-    .hero .inline-icon svg { width: 100%; height: 100%; display: block; }
+  /* ============================================================
+     SECTION SHELL — used by all content sections
+     ============================================================ */
+  .section { padding: 90px 60px; border-bottom: 1px solid var(--line); }
+  .section.tinted { background: var(--bg-soft); }
+  .section-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 24px; margin-bottom: 50px; flex-wrap: wrap;
+  }
+  .section-header h2 {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(40px, 5vw, 72px);
+    margin: 0; letter-spacing: -0.025em; line-height: 1;
+    color: var(--ink);
+  }
+  .section-header h2 .accent { color: var(--accent); }
+  .section-header .meta {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--ink-mute); letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
 
-    .hero .tagline {
-      font-family: var(--font-display);
-      font-weight: 500;
-      font-size: clamp(18px, 2vw, 28px);
-      color: var(--hero-ink-soft);
-      max-width: 920px;
-      line-height: 1.35;
-      display: flex; flex-wrap: wrap; justify-content: center;
-      align-items: center; gap: 6px 10px;
-    }
-    .hero .tagline .word { display: inline-flex; align-items: center; gap: 7px; }
-    .hero .tagline .word .inline-icon { width: 1.2em; height: 1.2em; }
+  /* ============================================================
+     SHOWCASE — Best of Last Semester (videos)
+     ============================================================ */
+  .showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .showcase {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    cursor: pointer;
+  }
+  .showcase:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px -12px rgba(0,0,0,0.14);
+    border-color: var(--line-strong);
+  }
+  .showcase .featured {
+    position: relative; aspect-ratio: 16 / 9;
+    background: #000; overflow: hidden;
+  }
+  .showcase .featured img { width: 100%; height: 100%; object-fit: cover; opacity: 0.92; transition: transform 0.5s; }
+  .showcase:hover .featured img { transform: scale(1.04); }
+  .showcase .featured::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 55%;
+    background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.85));
+    pointer-events: none; z-index: 1;
+  }
+  .showcase .featured .play {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 56px; height: 56px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2;
+    transition: background 0.2s;
+  }
+  .showcase:hover .featured .play { background: #FFFFFF; }
+  .showcase .featured .play::after {
+    content: '';
+    border-left: 14px solid var(--c, var(--accent));
+    border-top: 9px solid transparent;
+    border-bottom: 9px solid transparent;
+    margin-left: 4px;
+  }
+  .showcase .featured .overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 16px 18px 14px; z-index: 2;
+    pointer-events: none;
+  }
+  .showcase .featured .overlay .marker {
+    display: block; width: 28px; height: 3px;
+    background: var(--c, var(--accent));
+    margin-bottom: 8px;
+  }
+  .showcase .featured .overlay .name {
+    color: white; font-family: var(--font-display);
+    font-weight: 700; font-size: 17px;
+    letter-spacing: -0.01em; line-height: 1.2;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  /* link button (still optional, small, neutral) */
+  .link-btn {
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 28px; height: 28px;
+    background: rgba(255,255,255,0.92);
+    color: var(--c, var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    z-index: 3;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .link-btn:hover { background: var(--c, var(--accent)); color: white; text-decoration: none; }
+  .link-btn svg { width: 13px; height: 13px; }
+  .showcase .mod {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .showcase .mod .mname {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 22px; color: var(--ink);
+    letter-spacing: -0.015em;
+  }
+  .showcase .mod .tutor {
+    margin-top: 5px;
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .showcase .strip {
+    padding: 14px 20px 18px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .showcase .strip .mini-card {
+    display: flex; flex-direction: column; gap: 8px;
+    cursor: pointer;
+  }
+  .showcase .strip .mini {
+    position: relative; background: #000;
+    aspect-ratio: 16/9; overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .showcase .strip .mini img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; transition: opacity 0.2s; }
+  .showcase .strip .mini-card:hover .mini img { opacity: 1; }
+  .showcase .strip .mini-name {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: 11px; color: var(--ink);
+    letter-spacing: -0.005em;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .showcase .strip .mini-card.empty { cursor: default; pointer-events: none; }
+  .showcase .strip .mini-card.empty .mini { background: transparent; border-style: dashed; }
+  .showcase .strip .mini-card.empty .mini-name { visibility: hidden; }
+  .showcase .view-all {
+    margin-top: auto; padding: 14px 20px;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink-soft); font-weight: 600;
+    display: flex; justify-content: space-between;
+  }
 
-    /* ten floating decorative tech icons in the corners */
-    .hero .float-icon {
-      position: absolute;
-      width: 64px; height: 64px;
-      display: flex; align-items: center; justify-content: center;
-      z-index: 4;
-      pointer-events: none;
-      animation: floaty 7s ease-in-out infinite;
-    }
-    .hero .float-icon svg { width: 100%; height: 100%; display: block; }
-    @keyframes floaty {
-      0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
-      50%      { transform: translateY(-16px) rotate(calc(var(--rot, 0deg) + 6deg)); }
-    }
-    .hero .float-icon.f1  { top: 14%; left:  6%;  width: 70px; animation-delay: 0s;   --rot: -8deg; }
-    .hero .float-icon.f2  { top:  9%; left: 22%;  width: 56px; animation-delay: 1.2s; --rot:  6deg; }
-    .hero .float-icon.f3  { top: 16%; right: 12%; width: 78px; animation-delay: 0.5s; --rot: 12deg; }
-    .hero .float-icon.f4  { top:  8%; right:  4%; width: 58px; animation-delay: 2.1s; --rot: -4deg; }
-    .hero .float-icon.f5  { bottom: 24%; left: 5%; width: 76px; animation-delay: 1.8s; --rot: 10deg; }
-    .hero .float-icon.f6  { bottom: 18%; left: 22%; width: 62px; animation-delay: 0.9s; --rot: -12deg; }
-    .hero .float-icon.f7  { bottom: 26%; right: 8%; width: 84px; animation-delay: 2.5s; --rot: 8deg; }
-    .hero .float-icon.f8  { bottom: 20%; right: 24%; width: 60px; animation-delay: 1.5s; --rot: -6deg; }
-    .hero .float-icon.f9  { top: 42%; left: 3%;  width: 54px; animation-delay: 3s;   --rot: 14deg; }
-    .hero .float-icon.f10 { top: 48%; right: 3%; width: 60px; animation-delay: 2.6s; --rot: -10deg; }
+  /* ============================================================
+     POST CARDS — neutral, no colour blocks, just outlines
+     ============================================================ */
+  .posts-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+  }
+  .post-card {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  }
+  .post-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px -12px rgba(0,0,0,0.14);
+    border-color: var(--line-strong);
+  }
+  .post-card .cover {
+    position: relative; aspect-ratio: 16/9;
+    background: #000; overflow: hidden;
+  }
+  .post-card .cover img { width: 100%; height: 100%; object-fit: cover; opacity: 0.92; transition: transform 0.5s; }
+  .post-card:hover .cover img { transform: scale(1.04); }
+  .post-card .cover::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 55%;
+    background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.85));
+    pointer-events: none; z-index: 1;
+  }
+  .post-card .type-badge {
+    position: absolute; top: 12px; left: 12px;
+    background: rgba(255,255,255,0.92);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    padding: 4px 9px;
+    z-index: 2;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .post-card .type-badge .count {
+    color: var(--ink-mute);
+    padding-left: 5px; margin-left: 4px;
+    border-left: 1px solid var(--ink-faint);
+  }
+  .post-card .play-marker {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 52px; height: 52px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2;
+  }
+  .post-card .play-marker::after {
+    content: '';
+    border-left: 13px solid var(--accent);
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    margin-left: 3px;
+  }
+  .post-card .cover .overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 16px 16px 14px; z-index: 2;
+    pointer-events: none;
+  }
+  .post-card .cover .overlay .h {
+    color: #FFFFFF;
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 16px; letter-spacing: -0.01em;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+  .post-card .meta-row {
+    padding: 14px 16px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--ink-mute); letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .post-card .meta-row .author {
+    color: var(--ink); font-weight: 600; letter-spacing: 0;
+    text-transform: none; font-family: var(--font-display);
+    font-size: 12px;
+  }
 
-    /* ===== DRIFTING COLOUR ORBS =====
-       Four large soft-blurred colour blobs sitting BEHIND the STUDS
-       ghost word (z-index: 0 → behind ghost-word at z-index: 1). Each
-       orb has its own slow drift cycle so they never sync up. Adds an
-       ambient wash of moving brand colour to the cool-grey hero. */
-    .hero .orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.45;
-      z-index: 0;
-      pointer-events: none;
-      animation: drift var(--dur, 60s) ease-in-out infinite;
-      will-change: transform;
-    }
-    @keyframes drift {
-      0%, 100% { transform: translate(0, 0); }
-      25%      { transform: translate(80px, -40px); }
-      50%      { transform: translate(-30px, 60px); }
-      75%      { transform: translate(50px, 30px); }
-    }
-    .hero .orb.o1 { width: 380px; height: 380px; top:  5%; left: 10%; background: var(--c-pink);   --dur: 70s; }
-    .hero .orb.o2 { width: 320px; height: 320px; top: 50%; left: 70%; background: var(--c-violet); --dur: 60s; animation-delay: -10s; }
-    .hero .orb.o3 { width: 280px; height: 280px; top: 60%; left: 20%; background: var(--c-cyan);   --dur: 80s; animation-delay: -20s; }
-    .hero .orb.o4 { width: 240px; height: 240px; top: 10%; left: 60%; background: var(--c-yellow); --dur: 65s; animation-delay: -30s; }
+  /* TEXT/READ post variant — NEUTRAL, no colour. Just clean type. */
+  .post-card.text-post {
+    background: var(--bg-card);
+  }
+  .post-card.text-post .text-body {
+    padding: 24px 20px 18px;
+    flex: 1; display: flex; flex-direction: column;
+  }
+  .post-card.text-post .type-badge-static {
+    align-self: flex-start;
+    background: var(--bg-card);
+    border: 1px solid var(--line-strong);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    padding: 4px 9px;
+    margin-bottom: 18px;
+  }
+  .post-card.text-post .text-body .h {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 22px; letter-spacing: -0.015em; line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 14px;
+  }
+  .post-card.text-post .text-body .excerpt {
+    flex: 1;
+    font-family: var(--font-mono); font-size: 12px;
+    color: var(--ink-soft); line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 4; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .post-card.text-post .text-body .read {
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    font-weight: 600; margin-top: 16px;
+    color: var(--accent);
+  }
+  .post-card.text-post .meta-row {
+    border-top: 1px solid var(--line);
+  }
 
-    /* giant STUDS sat behind everything, breathing on its own 6s cycle */
-    .hero .ghost-word {
-      position: absolute;
-      left: 50%; top: 50%;
-      transform: translate(-50%, -50%);
-      font-family: var(--font-display);
-      font-weight: 900;
-      font-size: clamp(220px, 36vw, 540px);
-      line-height: 0.85;
-      letter-spacing: -0.05em;
-      color: #FFFFFF;
-      white-space: nowrap;
-      pointer-events: none;
-      z-index: 1;
-      user-select: none;
-      animation: bulb-flicker 6s linear infinite;
-      will-change: opacity;
-    }
+  /* ============================================================
+     FILTER CHIPS
+     ============================================================ */
+  .filter-chips {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 36px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--line);
+  }
+  .chip {
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    color: var(--ink-soft);
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+  .chip:hover { border-color: var(--ink); color: var(--ink); }
+  .chip.active {
+    background: var(--ink); color: var(--bg);
+    border-color: var(--ink); font-weight: 600;
+  }
+  .chip .num { margin-left: 8px; opacity: 0.55; font-weight: 600; }
 
-    /* black marquee at the bottom of the hero — divides cool grey from white */
-    .hero .marquee {
-      position: absolute; left: 0; right: 0; bottom: 0;
-      background: var(--hero-ink);
-      color: var(--hero-bg);
-      overflow: hidden;
-      padding: 18px 0;
-      z-index: 8;
-      border-top: 1px solid rgba(255,255,255,0.06);
-    }
-    .hero .marquee-track {
-      display: flex;
-      gap: 36px;
-      white-space: nowrap;
-      animation: scrollLeft 32s linear infinite;
-      font-family: var(--font-mono);
-      font-size: 14px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      font-weight: 500;
-    }
-    .hero .marquee-track .item { display: inline-flex; align-items: center; gap: 14px; }
-    .hero .marquee-track .star { color: #3D5BFF; }
-    @keyframes scrollLeft {
-      from { transform: translateX(0); }
-      to   { transform: translateX(-50%); }
-    }
+  /* ============================================================
+     MODULE NAV CARDS
+     ============================================================ */
+  .module-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+  .module-card {
+    padding: 22px 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    display: flex; align-items: center;
+    transition: transform 0.2s, border-color 0.2s, background 0.2s;
+    text-decoration: none;
+  }
+  .module-card:hover {
+    transform: translateX(4px);
+    border-color: var(--ink);
+    background: var(--bg-soft);
+  }
+  .module-card .name {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 19px; color: var(--ink);
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+  }
 
-    /* small "↓ SCROLL" nudge sitting just above the marquee. Pulses
-       gently to invite the visitor down. Scrolls off naturally with
-       the hero — no JS hide needed. */
-    .hero .scroll-hint {
-      position: absolute;
-      left: 50%; bottom: 78px;
-      transform: translateX(-50%);
-      z-index: 7;
-      display: flex; flex-direction: column; align-items: center; gap: 6px;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: 0.24em;
-      color: rgba(15, 17, 22, 0.45);
-      pointer-events: none;
-      animation: scroll-nudge 1.8s ease-in-out infinite;
-    }
-    .hero .scroll-hint .arrow { font-size: 18px; line-height: 1; }
-    @keyframes scroll-nudge {
-      0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.45; }
-      50%      { transform: translateX(-50%) translateY(6px); opacity: 0.85; }
-    }
+  /* ============================================================
+     FOOTER
+     ============================================================ */
+  footer {
+    padding: 50px 60px;
+    color: var(--ink-mute);
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    border-top: 1px solid var(--line);
+    text-align: center;
+  }
+  footer .contact { color: var(--ink); }
+  footer .sep { color: var(--ink-faint); margin: 0 8px; }
 
-    /* ========== HERO ANIMATIONS — bulb flicker ========== */
-    /* STUDS: 6s loop. Ignites with a struggle, holds with micro-flicker,
-       dies in a sputter, dark for 5% of cycle, repeats. */
-    @keyframes bulb-flicker {
-      0%   { opacity: 0; }
-      2%   { opacity: 0.75; }
-      3%   { opacity: 0.05; }
-      4%   { opacity: 0.9; }
-      5%   { opacity: 0.15; }
-      7%   { opacity: 1; }
-      20%  { opacity: 1; }
-      21%  { opacity: 0.35; }
-      22%  { opacity: 1; }
-      40%  { opacity: 1; }
-      41%  { opacity: 0.6; }
-      42%  { opacity: 1; }
-      60%  { opacity: 1; }
-      61%  { opacity: 0.45; }
-      62%  { opacity: 1; }
-      78%  { opacity: 1; }
-      80%  { opacity: 0.2; }
-      82%  { opacity: 0.95; }
-      84%  { opacity: 0.05; }
-      87%  { opacity: 0.55; }
-      91%  { opacity: 0; }
-      93%  { opacity: 0.3; }
-      95%  { opacity: 0; }
-      100% { opacity: 0; }
-    }
-    /* Headline: 12s loop. Solid bright for most of the cycle, then one
-       sharp flicker burst near the end, then a small twitch, then quiet. */
-    @keyframes headline-flicker {
-      0%, 78% { opacity: 1; }
-      79%     { opacity: 0.25; }
-      80%     { opacity: 1; }
-      81%     { opacity: 0.05; }
-      82%     { opacity: 0.8; }
-      83%     { opacity: 0.2; }
-      85%     { opacity: 1; }
-      91%     { opacity: 1; }
-      92%     { opacity: 0.4; }
-      93%     { opacity: 1; }
-      100%    { opacity: 1; }
-    }
+  /* ============================================================
+     ARTICLE PAGE — full post view
+     Cover: full width, fixed height (your spec)
+     Body: same 60px margins as the rest of the site
+     ============================================================ */
+  .article-shell {
+    background: var(--bg);
+  }
+  .article-nav {
+    padding: 24px 60px;
+    border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--ink-soft); letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .article-nav .back {
+    color: var(--accent); font-weight: 600; cursor: pointer;
+  }
+  .article-nav .back:hover { text-decoration: underline; }
 
-    @media (max-width: 900px) {
-      .hero { padding: 80px 22px 0; margin: 0 -16px; }
-      .hero .float-icon { display: none; }
-      .hero .float-icon.f1, .hero .float-icon.f3,
-      .hero .float-icon.f5, .hero .float-icon.f7 { display: flex; }
-      .hero h1.headline { font-size: clamp(40px, 11vw, 84px); }
-      .hero .eyebrow { top: 70px; font-size: 11px; letter-spacing: 0.22em; }
-      /* drop GPU load on phones — only 2 orbs at reduced blur */
-      .hero .orb { display: none; }
-      .hero .orb.o1, .hero .orb.o2 { display: block; opacity: 0.3; filter: blur(60px); }
-    }
-    /* On phones, the hero collapses to a near-square aspect (1:1.1) so
-       it fits inside one viewport "card" and so the giant STUDS ghost
-       word stays whole inside the available width. STUDS itself scales
-       freely with vw so it always sits comfortably inside the viewport
-       — no horizontal overflow, no cropping. The headline stays anchored
-       in the middle, the marquee stays anchored at the bottom. */
-    @media (max-width: 700px) {
-      .hero {
-        min-height: 0;
-        aspect-ratio: 1 / 1.1;
-        padding: 70px 18px 0;
-      }
-      .hero .ghost-word {
-        font-size: 30vw;       /* drops the desktop 220px min so STUDS scales freely */
-      }
-      .hero .headline-wrap {
-        padding: 30px 0 80px;  /* tighter padding so headline + tagline fit in the square */
-      }
-      .hero h1.headline {
-        font-size: clamp(34px, 10vw, 64px);
-        margin: 0 0 18px;
-      }
-      .hero .tagline { font-size: clamp(12px, 3.4vw, 16px); }
-      .hero .eyebrow { top: 60px; font-size: 10px; letter-spacing: 0.2em; }
-    }
+  /* COVER — full viewport width, fixed height. Site already places
+     this without surrounding padding so it bleeds edge-to-edge. */
+  .article-cover {
+    position: relative;
+    width: 100%;
+    height: clamp(380px, 56vh, 560px);
+    overflow: hidden;
+    background: #000;
+  }
+  .article-cover img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
 
+  /* HEAD — sits inside the standard 60px section padding */
+  .article-head {
+    padding: 70px 60px 36px;
+    border-bottom: 1px solid var(--line);
+  }
+  .article-head .meta-line {
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600;
+    margin-bottom: 24px;
+  }
+  .article-head h1 {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(40px, 6vw, 84px);
+    margin: 0 0 30px;
+    letter-spacing: -0.025em; line-height: 1.02;
+    color: var(--ink);
+  }
+  .article-head .accent-line {
+    display: block; width: 60px; height: 3px;
+    background: var(--accent); margin-bottom: 26px;
+  }
+  .article-head .byline {
+    font-family: var(--font-mono); font-size: 12px;
+    color: var(--ink-soft); letter-spacing: 0.08em;
+  }
+  .article-head .byline strong {
+    color: var(--ink); font-weight: 700;
+    font-family: var(--font-display); font-size: 15px; letter-spacing: 0;
+  }
 
-    /* ========== DRAMATIC RISE + SCALE + FADE ON SCROLL ==========
-       Cards lift up 30px, scale from 0.92 to 1.0, and fade from
-       opacity 0 to 1 simultaneously. Duration 1.0s with a soft
-       ease-out curve. 200ms stagger between cards.
-       CSS animation (not transition) so element-level hover
-       transitions on cards stay independent. Sibling-trigger in JS
-       applies .in-view to all siblings at the same moment so the
-       cascade is always in DOM order. */
-    .rise {
-      opacity: 0;
-      transform: translate3d(0, 30px, 0) scale(0.92);
-      will-change: transform, opacity;
-    }
-    .rise.in-view {
-      animation: dramaticRise 1.0s cubic-bezier(0.16, 0.84, 0.32, 1) forwards;
-      will-change: auto;
-    }
-    @keyframes dramaticRise {
-      to {
-        opacity: 1;
-        transform: translate3d(0, 0, 0) scale(1);
-      }
-    }
-    /* per-group stagger — 200ms between each card. Row 2 of grids
-       restarts the cascade from 0 to keep totals under 1.5s. */
-    .module-nav-grid > .rise:nth-child(1) { animation-delay: 0.00s; }
-    .module-nav-grid > .rise:nth-child(2) { animation-delay: 0.20s; }
-    .module-nav-grid > .rise:nth-child(3) { animation-delay: 0.40s; }
-    .module-nav-grid > .rise:nth-child(4) { animation-delay: 0.60s; }
-    .module-nav-grid > .rise:nth-child(5) { animation-delay: 0.00s; }
-    .module-nav-grid > .rise:nth-child(6) { animation-delay: 0.20s; }
-    .module-nav-grid > .rise:nth-child(7) { animation-delay: 0.40s; }
-    .module-nav-grid > .rise:nth-child(8) { animation-delay: 0.60s; }
-    .showcase-grid > .rise:nth-child(1) { animation-delay: 0.00s; }
-    .showcase-grid > .rise:nth-child(2) { animation-delay: 0.20s; }
-    .showcase-grid > .rise:nth-child(3) { animation-delay: 0.40s; }
-    .showcase-grid > .rise:nth-child(4) { animation-delay: 0.60s; }
-    .masonry > .rise:nth-child(1) { animation-delay: 0.00s; }
-    .masonry > .rise:nth-child(2) { animation-delay: 0.20s; }
-    .masonry > .rise:nth-child(3) { animation-delay: 0.40s; }
-    .masonry > .rise:nth-child(4) { animation-delay: 0.00s; }
-    .masonry > .rise:nth-child(5) { animation-delay: 0.20s; }
-    .masonry > .rise:nth-child(6) { animation-delay: 0.40s; }
-    .vision .rise + .rise { animation-delay: 0.20s; }
-    .vision .rise + .rise + .rise { animation-delay: 0.40s; }
-    .vision .rise + .rise + .rise + .rise { animation-delay: 0.60s; }
-    @media (prefers-reduced-motion: reduce) {
-      .rise { opacity: 1; transform: none; animation: none; }
-    }
+  /* BODY — same 60px site margins, text flows in 3 columns
+     (newspaper feel) to fill the full gallery width below. */
+  .article-body {
+    padding: 50px 60px 60px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--font-display);
+    font-size: 17px; line-height: 1.65;
+    color: var(--ink-soft);
+  }
+  .article-body .body-inner {
+    column-count: 3;
+    column-gap: 50px;
+    column-fill: balance;
+  }
+  .article-body p { margin: 0 0 18px; }
+  .article-body p:first-of-type::first-letter {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: 60px; line-height: 0.85;
+    float: left; padding: 4px 8px 0 0;
+    color: var(--accent);
+  }
+  .article-body strong { color: var(--ink); font-weight: 700; }
+  .article-body em { font-style: italic; }
+  .article-body a { color: var(--accent); border-bottom: 1px solid currentColor; }
+  .article-body a:hover { text-decoration: none; opacity: 0.85; }
+  .article-body ul {
+    padding-left: 20px;
+    margin: 0 0 18px;
+    break-inside: avoid;     /* don't split lists across columns */
+  }
+  .article-body li { margin-bottom: 8px; }
+  .article-body h3 {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 22px; letter-spacing: -0.015em;
+    color: var(--ink);
+    margin: 28px 0 12px;
+    break-after: avoid;       /* keep heading with next paragraph */
+  }
 
-    /* ========== LINK BUTTON (globe icon, top-right of thumbnails)
-       Renders ONLY when the row in the sheet has a value in the
-       Link cell. Click opens the external URL in a new tab with
-       stopPropagation so the lightbox doesn't also open.
-       Dimensions are locked with !important so the button can
-       never expand beyond its 30x30 box even if a stylesheet
-       higher in the cascade tries to override. */
-    .link-btn {
-      position: absolute !important;
-      top: 14px !important;
-      right: 14px !important;
-      width: 30px !important;
-      height: 30px !important;
-      background: rgba(255,255,255,0.92);
-      color: var(--c, var(--c-pink));
-      border-radius: 2px;
-      display: flex !important;
-      align-items: center;
-      justify-content: center;
-      z-index: 3;
-      text-decoration: none;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-      box-sizing: border-box;
-      overflow: hidden;
-    }
-    .link-btn:hover {
-      background: var(--c, var(--c-pink));
-      color: #FFFFFF;
-    }
-    .link-btn svg { width: 14px; height: 14px; display: block; flex-shrink: 0; }
-    /* smaller link button on mini thumbs and brick small cards */
-    .showcase .mini .link-btn,
-    .masonry-card.size-small .link-btn,
-    .masonry-card.size-medium .link-btn {
-      top: 6px !important;
-      right: 6px !important;
-      width: 22px !important;
-      height: 22px !important;
-    }
-    .showcase .mini .link-btn svg,
-    .masonry-card.size-small .link-btn svg,
-    .masonry-card.size-medium .link-btn svg { width: 11px; height: 11px; }
+  /* GALLERY — same 60px site margins */
+  .article-gallery {
+    padding: 60px;
+    border-bottom: 1px solid var(--line);
+  }
+  .article-gallery h3 {
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700;
+    margin: 0 0 28px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .article-gallery h3::after {
+    content: ''; flex: 1; height: 1px; background: var(--line);
+  }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); gap: 12px;
+  }
+  .gallery-grid .gi {
+    position: relative; aspect-ratio: 1 / 1;
+    background: #000; overflow: hidden; cursor: pointer;
+    border: 1px solid var(--line);
+  }
+  .gallery-grid .gi img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.4s;
+  }
+  .gallery-grid .gi:hover img { transform: scale(1.05); }
+  .gallery-grid .gi:first-child {
+    grid-column: span 2; grid-row: span 2;
+  }
+  .article-foot {
+    text-align: center; padding: 50px 60px 60px;
+  }
+  .article-foot a {
+    font-family: var(--font-mono); font-size: 12px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 600; color: var(--accent);
+    display: inline-flex; align-items: center; gap: 16px;
+  }
 
 
-    /* ========== VISION ========== */
-    .vision {
-      padding: 100px 60px; border-bottom: 1px solid var(--line);
-      display: grid; grid-template-columns: 1fr 1.6fr;
-      gap: 80px;
-      align-items: center;
-    }
-    .vision h2 {
-      font-family: var(--font-display); font-weight: 700;
-      font-size: clamp(32px, 4vw, 48px); margin: 0;
-      line-height: 1.05; letter-spacing: -0.02em;
-      color: var(--ink);
-    }
-    .vision h2 .accent { color: var(--c-pink); }
-    .vision .body p {
-      font-size: 16px; color: var(--ink); margin: 0 0 20px;
-      line-height: 1.7;
-    }
-    .vision .body p:last-child { margin-bottom: 0; }
+  /* ============================================================
+     MODULE PAGE (brick gallery for one module + semester)
+     ============================================================ */
+  .module-page {
+    background: var(--bg);
+  }
+  .module-nav-row {
+    padding: 22px 60px;
+    border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--ink-soft); letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .module-nav-row .back {
+    color: var(--accent); font-weight: 600; cursor: pointer;
+  }
+  .module-nav-row .back:hover { text-decoration: underline; }
+  .module-hero {
+    padding: 70px 60px 60px;
+    border-bottom: 1px solid var(--line);
+  }
+  .module-hero .meta-line {
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600;
+    margin-bottom: 22px;
+  }
+  .module-hero h1 {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(48px, 7vw, 108px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    margin: 0 0 18px;
+  }
+  /* Module tagline — short value-prop line from the sheet, sits between
+     the module name and the meta row (tutor/semester/projects). */
+  .module-hero .module-tagline {
+    font-family: var(--font-display); font-weight: 500;
+    font-size: clamp(18px, 1.6vw, 26px);
+    color: var(--ink-soft);
+    line-height: 1.35;
+    margin: 0 0 28px;
+    max-width: 900px;
+  }
+  .module-hero .module-meta-row {
+    font-family: var(--font-mono); font-size: 12px;
+    color: var(--ink-mute); letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .module-hero .module-meta-row strong {
+    color: var(--ink); font-weight: 600;
+  }
+  .semester-section { padding: 70px 60px; border-bottom: 1px solid var(--line); }
+  .sem-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 24px; margin-bottom: 36px; flex-wrap: wrap;
+  }
+  .sem-head h2 {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(28px, 3vw, 40px);
+    margin: 0; letter-spacing: -0.015em; line-height: 1.1;
+    color: var(--ink);
+  }
+  .sem-head h2 .accent { color: var(--accent); }
+  .sem-head .sem-meta {
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--ink-mute); letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  /* Module videos — CSS-columns masonry. 16:9 thumbnails; cards flow
+     top-to-bottom in each column. Matches the article gallery so the
+     layout language is consistent across the site. */
+  .masonry {
+    column-count: 4;
+    column-gap: 18px;
+  }
+  .masonry-card {
+    position: relative;
+    display: block;
+    background: transparent;
+    overflow: hidden;
+    cursor: pointer;
+    margin-bottom: 22px;
+    break-inside: avoid;
+    width: 100%;
+  }
+  .masonry-card .v-thumb {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    overflow: hidden;
+  }
+  .masonry-card .v-thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.5s;
+  }
+  .masonry-card:hover .v-thumb img { transform: scale(1.04); }
+  .masonry-card .v-thumb .v-play {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px; height: 50px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .masonry-card .v-thumb .v-play::after {
+    content: '';
+    border-left: 13px solid var(--c, var(--accent));
+    border-top: 9px solid transparent;
+    border-bottom: 9px solid transparent;
+    margin-left: 3px;
+  }
+  .masonry-card .v-name {
+    padding: 12px 4px 0;
+    font-family: var(--font-display); font-weight: 600;
+    font-size: 13px; color: var(--ink);
+    letter-spacing: -0.005em; line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  @media (max-width: 1400px) {
+    .masonry { column-count: 3; }
+  }
+  @media (max-width: 1100px) {
+    .masonry { column-count: 3; column-gap: 14px; }
+  }
+  @media (max-width: 700px) {
+    .masonry { column-count: 2; column-gap: 12px; }
+    .module-nav-row { padding: 18px 22px; }
+    .module-hero { padding: 40px 22px 30px; }
+    .semester-section { padding: 40px 22px; }
+  }
 
-    /* ========== SECTION HEADERS ========== */
-    .section { padding: 80px 60px; border-bottom: 1px solid var(--line); }
-    .section-header {
-      display: flex; align-items: baseline; justify-content: space-between;
-      margin-bottom: 48px; gap: 24px; flex-wrap: wrap;
-    }
-    .section-header h2 {
-      font-family: var(--font-display); font-weight: 700;
-      font-size: clamp(28px, 3.5vw, 44px); margin: 0;
-      letter-spacing: -0.02em; color: var(--ink);
-    }
-    .section-header h2 .accent-pink { color: var(--c-pink); }
-    .section-header h2 .accent-cyan { color: var(--c-cyan); }
-    .section-header h2 .accent-orange { color: var(--c-orange); }
-    .section-header .meta {
-      font-family: var(--font-mono); font-size: 11px;
-      color: var(--ink-soft); letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
+  /* ============================================================
+     LIGHTBOX (simple)
+     ============================================================ */
+  .lightbox {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.94);
+    display: none; align-items: center; justify-content: center;
+    padding: 60px;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox .lb-content {
+    position: relative;
+    width: 100%; max-width: 1200px;
+    aspect-ratio: 16/9;
+    background: #000;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-family: var(--font-display);
+    font-size: 20px;
+  }
+  /* Carousel mode — image fits naturally, no aspect lock, no bg */
+  .lightbox.carousel-mode .lb-content {
+    aspect-ratio: unset;
+    background: transparent;
+    max-width: 90vw; max-height: 85vh;
+    width: auto; height: auto;
+  }
+  .lightbox.carousel-mode .lb-content img {
+    max-width: 90vw; max-height: 85vh;
+    width: auto; height: auto;
+    display: block; object-fit: contain;
+  }
+  .lightbox .lb-close {
+    position: fixed; top: 22px; right: 30px;
+    background: none; border: none;
+    color: white; font-size: 30px;
+    cursor: pointer; line-height: 1;
+    z-index: 10;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.15s;
+  }
+  .lightbox .lb-close:hover { opacity: 0.7; }
+  .lightbox .lb-caption {
+    position: fixed; bottom: 28px; left: 0; right: 0;
+    text-align: center;
+    color: white; opacity: 0.7;
+    font-family: var(--font-mono); font-size: 12px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  /* Prev/Next nav — only shown in carousel mode */
+  .lb-nav {
+    position: fixed; top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    width: 52px; height: 52px;
+    cursor: pointer; z-index: 10;
+    display: none;
+    align-items: center; justify-content: center;
+    font-size: 22px;
+    transition: background 0.15s;
+  }
+  .lb-nav:hover { background: rgba(255,255,255,0.18); }
+  .lightbox.carousel-mode .lb-nav { display: flex; }
+  .lb-prev { left: 24px; }
+  .lb-next { right: 24px; }
+  @media (max-width: 700px) {
+    .lightbox { padding: 24px; }
+    .lb-prev { left: 8px; }
+    .lb-next { right: 8px; }
+    .lb-nav { width: 42px; height: 42px; }
+  }
 
-    /* ========== SHOWCASE — kept as uniform grid ========== */
-    .showcase-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 24px;
-    }
-    @media (max-width: 1400px) {
-      .showcase-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    .showcase {
-      background: var(--bg-card);
-      border: 1px solid var(--line);
-      overflow: hidden;
-      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
-      display: flex; flex-direction: column;
-      position: relative;
-    }
-    .showcase::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 4px;
-      background: var(--c, var(--c-pink));
-      z-index: 1;
-    }
-    .showcase:hover {
-      border-color: var(--c, var(--c-pink));
-      transform: translateY(-3px);
-      box-shadow: 0 12px 30px -8px color-mix(in srgb, var(--c, var(--c-pink)) 25%, transparent);
-    }
-
-    .showcase .featured {
-      position: relative;
-      aspect-ratio: 16 / 9;
-      background: #000;
-      cursor: pointer;
-      overflow: hidden;
-    }
-    .showcase .featured img {
-      width: 100%; height: 100%; object-fit: cover;
-      transition: transform 0.5s;
-    }
-    .showcase .featured:hover img { transform: scale(1.04); }
-    .showcase .featured iframe { width: 100%; height: 100%; border: 0; display: block; }
-    .showcase .featured .play-big {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 72px; height: 72px;
-      background: rgba(255,255,255,0.95);
-      border: 2px solid var(--c, var(--c-pink));
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      pointer-events: none;
-      transition: background 0.2s, transform 0.2s;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    }
-    .showcase .featured:hover .play-big {
-      background: var(--c, var(--c-pink));
-      transform: translate(-50%, -50%) scale(1.06);
-    }
-    .showcase .featured .play-big::after {
-      content: '';
-      border-left: 18px solid var(--c, var(--c-pink));
-      border-top: 12px solid transparent;
-      border-bottom: 12px solid transparent;
-      margin-left: 6px;
-      transition: border-left-color 0.2s;
-    }
-    .showcase .featured:hover .play-big::after { border-left-color: white; }
-    .showcase .featured .featured-tag {
-      position: absolute; top: 14px; left: 14px;
-      font-family: var(--font-mono); font-size: 11px; font-weight: 600;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      padding: 5px 10px;
-      background: var(--c, var(--c-pink));
-      color: white;
-      z-index: 2;
-      display: inline-flex; align-items: center; gap: 4px;
-    }
-    .showcase .featured .featured-tag .eye { font-size: 10px; opacity: 0.85; }
-    /* Cinematic name overlay — the featured student name sits on top of
-       the thumbnail, with a soft dark gradient behind it to keep the text
-       legible regardless of the underlying image. A small marker line in
-       the module colour sits above the name as the only colour cue. */
-    .showcase .featured::after {
-      content: '';
-      position: absolute; bottom: 0; left: 0; right: 0;
-      height: 50%;
-      background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.85));
-      pointer-events: none;
-      z-index: 1;
-    }
-    .showcase .featured .overlay-name {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      padding: 20px 20px 16px;
-      z-index: 2;
-      pointer-events: none;
-    }
-    .showcase .featured .overlay-name .marker {
-      display: block;
-      width: 30px; height: 3px;
-      background: var(--c, var(--c-pink));
-      margin-bottom: 8px;
-    }
-    .showcase .featured .overlay-name .name-text {
-      color: #FFFFFF;
-      font-family: var(--font-display); font-weight: 700;
-      font-size: 18px;
-      letter-spacing: -0.01em;
-      line-height: 1.2;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-    }
-
-    .showcase .module-info {
-      padding: 20px 22px 18px;
-      display: flex; flex-direction: column; gap: 6px;
-      border-bottom: 1px solid var(--line);
-    }
-    .showcase .module-info .module-name {
-      font-family: var(--font-display); font-weight: 700;
-      font-size: 26px; color: var(--c, var(--c-pink));
-      line-height: 1.1; cursor: pointer;
-      letter-spacing: -0.015em;
-    }
-    .showcase .module-info .module-name:hover { text-decoration: underline; }
-    .showcase .module-info .module-meta {
-      font-family: var(--font-mono); font-size: 11px;
-      color: var(--ink-soft); letter-spacing: 0.06em;
-      text-transform: uppercase;
-      display: flex; gap: 14px; flex-wrap: wrap; margin-top: 4px;
-    }
-    .showcase .module-info .module-meta .sep { color: var(--ink-mute); }
-
-    .showcase .filmstrip {
-      padding: 18px 22px 22px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-    .showcase .mini { cursor: pointer; display: flex; flex-direction: column; }
-    .showcase .mini.empty { cursor: default; pointer-events: none; }
-    .showcase .mini.empty .mini-thumb {
-      background: #FAFAF8;
-      border: 1px dashed var(--line-strong);
-      opacity: 0.7;
-    }
-    .showcase .mini .mini-thumb {
-      position: relative; aspect-ratio: 16 / 9;
-      background: #000; overflow: hidden;
-      border: 1px solid var(--line);
-      transition: border-color 0.2s;
-    }
-    .showcase .mini:hover .mini-thumb { border-color: var(--c, var(--c-pink)); }
-    .showcase .mini .mini-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .showcase .mini .mini-thumb iframe { width: 100%; height: 100%; border: 0; display: block; }
-    .showcase .mini .mini-thumb .mini-play {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 26px; height: 26px;
-      background: rgba(255,255,255,0.92);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      pointer-events: none;
-    }
-    .showcase .mini .mini-thumb .mini-play::after {
-      content: '';
-      border-left: 7px solid var(--c, var(--c-pink));
-      border-top: 5px solid transparent;
-      border-bottom: 5px solid transparent;
-      margin-left: 2px;
-    }
-    .showcase .mini .mini-thumb .mini-pos-tag {
-      position: absolute; top: 6px; left: 6px;
-      background: var(--c, var(--c-pink));
-      color: #FFFFFF;
-      font-family: var(--font-mono);
-      font-size: 9px; font-weight: 700;
-      padding: 3px 6px;
-      letter-spacing: 0.06em;
-      z-index: 2;
-      display: inline-flex; align-items: center; gap: 3px;
-    }
-    .showcase .mini .mini-thumb .mini-pos-tag .eye { font-size: 8px; opacity: 0.85; }
-    .showcase .mini .mini-meta {
-      padding-top: 8px;
-      font-family: var(--font-mono); font-size: 10px;
-      color: var(--ink-soft); letter-spacing: 0.04em;
-      line-height: 1.35;
-    }
-    .showcase .mini .mini-meta .student-mini {
-      font-family: var(--font-display); font-weight: 600;
-      font-size: 12px; color: var(--ink);
-      letter-spacing: 0;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .showcase .mini .mini-meta .student-line {
-      display: block;
-      height: 2px; width: 20px;
-      background: var(--c, var(--c-pink));
-      margin-top: 6px;
-    }
-
-    .showcase .view-all {
-      padding: 14px 22px 18px;
-      border-top: 1px solid var(--line);
-      font-family: var(--font-mono); font-size: 11px; font-weight: 600;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--c, var(--c-pink));
-      cursor: pointer;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .showcase .view-all:hover { text-decoration: underline; }
-    .showcase .view-all .arrow { font-size: 14px; }
-
-    /* ========== MODULE NAV GRID ========== */
-    .module-nav-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 16px;
-    }
-    .module-nav {
-      padding: 22px;
-      background: var(--bg-soft);
-      border: 1px solid var(--line);
-      border-left: 4px solid var(--c, var(--c-pink));
-      cursor: pointer;
-      transition: background 0.2s, transform 0.2s;
-      display: flex; flex-direction: column; gap: 10px;
-      min-height: 100px;
-    }
-    .module-nav:hover {
-      background: white;
-      transform: translateX(4px);
-      box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--c, var(--c-pink)) 30%, transparent);
-    }
-    .module-nav .num {
-      font-family: var(--font-mono); font-size: 10px;
-      color: var(--ink-mute); letter-spacing: 0.1em;
-    }
-    .module-nav .name {
-      font-family: var(--font-display); font-weight: 700;
-      font-size: 18px; color: var(--c, var(--c-pink));
-      letter-spacing: -0.01em;
-      margin-top: auto;
-    }
-
-    /* ========== MODULE PAGE ========== */
-    .module-hero {
-      position: relative;
-      padding: 120px 60px 60px;
-      border-bottom: 1px solid var(--line);
-    }
-    .module-hero .breadcrumb {
-      font-family: var(--font-mono); font-size: 11px;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--ink-soft); margin-bottom: 24px;
-    }
-    .module-hero .breadcrumb a { color: var(--ink-soft); cursor: pointer; }
-    .module-hero .breadcrumb a:hover { color: var(--c, var(--c-pink)); text-decoration: none; }
-    .module-hero h1 {
-      font-family: var(--font-display); font-weight: 900;
-      font-size: clamp(40px, 7vw, 96px);
-      color: var(--c, var(--c-pink));
-      line-height: 0.9; letter-spacing: -0.03em;
-      margin: 0 0 24px;
-    }
-    .module-hero .module-meta-row {
-      display: flex; gap: 28px; flex-wrap: wrap;
-      font-family: var(--font-mono); font-size: 12px;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--ink-soft);
-    }
-    .module-hero .module-meta-row .label { color: var(--ink-mute); }
-    .module-hero .module-meta-row .val { color: var(--ink); font-weight: 500; }
-    .module-hero .brief {
-      font-family: var(--font-display); font-weight: 500;
-      font-size: clamp(20px, 2.2vw, 28px);
-      color: var(--ink); max-width: 800px;
-      margin-top: 32px; line-height: 1.35;
-    }
-
-    .semester-section { padding: 64px 60px; border-bottom: 1px solid var(--line); }
-    .semester-section:last-child { border-bottom: none; }
-    .semester-section.muted .masonry-card { opacity: 0.85; }
-    .semester-section .sem-head {
-      display: flex; justify-content: space-between; align-items: baseline;
-      margin-bottom: 36px; gap: 20px; flex-wrap: wrap;
-    }
-    .semester-section h3 {
-      font-family: var(--font-display); font-weight: 700;
-      font-size: clamp(22px, 2.5vw, 30px);
-      margin: 0; color: var(--ink);
-      letter-spacing: -0.015em;
-    }
-    .semester-section h3 .accent { color: var(--c, var(--c-pink)); }
-    .semester-section .sem-meta {
-      font-family: var(--font-mono); font-size: 11px;
-      color: var(--ink-soft); letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    /* ========== SNUG MOSAIC — HERO + STACKED SMALLS, NO GAPS ========== */
-    /* Hero spans 4 cols (16:9). Smalls span 2 cols (16:9). A 4-col hero
-       is twice as wide as a 2-col small; with both at 16:9, the hero's
-       height equals exactly 2 stacked smalls' heights. Adding `dense`
-       grid auto-flow lets two stacked smalls fill the column next to a
-       hero with NO gap. */
-    .masonry {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 6px;
-      grid-auto-flow: row dense;
-      align-items: start;
-    }
-
-    .masonry-card {
-      position: relative;
-      display: flex; flex-direction: column;
-      background: transparent;
-      padding: 0;
-      overflow: hidden;
-      transition: transform 0.2s;
-    }
-    .masonry-card:hover {
-      transform: translateY(-2px);
-    }
-
-    /* hero = 4 cols × 2 rows (so 2 smalls stack in the 2-col gap beside it);
-       small = 2 cols; medium = 3 cols; wide = 6 cols */
-    .masonry-card.size-hero   { grid-column: span 4; grid-row: span 2; }
-    .masonry-card.size-small  { grid-column: span 2; grid-row: span 1; }
-    .masonry-card.size-medium { grid-column: span 3; grid-row: span 1; }
-    .masonry-card.size-wide   { grid-column: span 6; grid-row: span 1; }
-
-    @media (max-width: 1200px) {
-      .masonry { grid-template-columns: repeat(4, 1fr); }
-      .masonry-card.size-hero   { grid-column: span 4; grid-row: span 2; }
-      .masonry-card.size-small  { grid-column: span 2; grid-row: span 1; }
-      .masonry-card.size-medium { grid-column: span 2; grid-row: span 1; }
-      .masonry-card.size-wide   { grid-column: span 4; grid-row: span 1; }
-    }
-    @media (max-width: 700px) {
-      .masonry { grid-template-columns: 1fr; gap: 6px; }
-      .masonry-card { grid-column: span 1 !important; grid-row: span 1 !important; }
-    }
-
-    .masonry-card .v-thumb {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9;        /* every thumb is 16:9 */
-      background: #000;
-      cursor: pointer;
-      overflow: hidden;
-      display: block;
-    }
-
-    .masonry-card .v-thumb img {
-      width: 100%; height: 100%; object-fit: cover;
-      transition: transform 0.5s;
-    }
-    .masonry-card .v-thumb:hover img { transform: scale(1.06); }
-
-    /* The student name sits OUTSIDE the thumbnail (clean editorial),
-       with a small module-colour underline as the only colour accent.
-       No overlays, no scrims, no gold sheen. */
-    .masonry-card .v-name {
-      padding: 14px 4px 4px;
-      font-family: var(--font-display);
-      font-weight: 700;
-      color: var(--ink);
-      font-size: 20px;
-      letter-spacing: -0.01em;
-      line-height: 1.15;
-    }
-    .masonry-card .v-name::after {
-      content: '';
-      display: block;
-      height: 2px; width: 28px;
-      background: var(--c);
-      margin-top: 10px;
-    }
-
-    /* per-size name scaling */
-    .masonry-card.size-hero  .v-name { font-size: 34px; padding-top: 18px; }
-    .masonry-card.size-hero  .v-name::after { width: 44px; margin-top: 14px; height: 3px; }
-    .masonry-card.size-wide  .v-name { font-size: 26px; padding-top: 16px; }
-    .masonry-card.size-wide  .v-name::after { width: 36px; }
-    .masonry-card.size-medium .v-name { font-size: 20px; }
-    .masonry-card.size-small .v-name { font-size: 16px; padding-top: 12px; }
-    .masonry-card.size-small .v-name::after { width: 24px; margin-top: 8px; }
-
-    /* play button */
-    .masonry-card .v-thumb .v-play {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(255,255,255,0.95);
-      border: 1.5px solid var(--tile, #FF2E9A);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      pointer-events: none;
-      transition: background 0.2s, transform 0.2s;
-      box-shadow: 0 2px 14px rgba(0,0,0,0.4);
-      z-index: 3;
-    }
-    .masonry-card.size-hero .v-thumb .v-play { width: 100px; height: 100px; }
-    .masonry-card.size-wide .v-thumb .v-play { width: 72px; height: 72px; }
-    .masonry-card.size-medium .v-thumb .v-play { width: 60px; height: 60px; }
-    .masonry-card.size-small .v-thumb .v-play { width: 50px; height: 50px; }
-    .masonry-card .v-thumb:hover .v-play {
-      background: var(--tile, #FF2E9A);
-      transform: translate(-50%, -50%) scale(1.06);
-    }
-    .masonry-card .v-thumb .v-play::after {
-      content: '';
-      border-left: 16px solid var(--tile, #FF2E9A);
-      border-top: 11px solid transparent;
-      border-bottom: 11px solid transparent;
-      margin-left: 5px;
-      transition: border-left-color 0.2s;
-    }
-    .masonry-card.size-hero .v-thumb .v-play::after {
-      border-left-width: 22px; border-top-width: 15px; border-bottom-width: 15px;
-    }
-    .masonry-card.size-small .v-thumb .v-play::after {
-      border-left-width: 13px; border-top-width: 9px; border-bottom-width: 9px;
-    }
-    .masonry-card .v-thumb:hover .v-play::after { border-left-color: white; }
-
-    /* position tag (top-left) in tile color */
-    .masonry-card .v-thumb .pos-tag {
-      position: absolute; top: 12px; left: 12px;
-      font-family: var(--font-mono); font-size: 11px; font-weight: 700;
-      padding: 5px 10px;
-      background: var(--tile, #FF2E9A);
-      color: white;
-      letter-spacing: 0.08em;
-      z-index: 2;
-      display: inline-flex; align-items: center; gap: 4px;
-    }
-    .masonry-card .v-thumb .pos-tag .eye {
-      font-size: 9px;
-      opacity: 0.85;
-      margin-left: 2px;
-    }
-    .masonry-card.size-hero .v-thumb .pos-tag { font-size: 13px; padding: 6px 14px; }
-    .masonry-card.size-hero .v-thumb .pos-tag .eye { font-size: 11px; }
-
-    /* ========== LIGHTBOX ========== */
-    .lightbox {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.92);
-      display: none;
-      align-items: center; justify-content: center;
-      z-index: 2000;
-      padding: 40px;
-    }
-    .lightbox.open { display: flex; }
-    .lightbox .lb-frame {
-      position: relative;
-      width: 100%;
-      max-width: 1280px;
-      aspect-ratio: 16 / 9;
-      background: #000;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-    }
-    .lightbox .lb-frame #lb-iframe-host {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-    }
-    .lightbox .lb-frame iframe {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border: 0;
-      display: block;
-    }
-    .lightbox .lb-close {
-      position: absolute; top: -42px; right: 0;
-      width: 36px; height: 36px;
-      background: transparent; border: none;
-      color: #fff; cursor: pointer;
-      font-family: var(--font-mono); font-size: 24px; font-weight: 300;
-      line-height: 1;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .lightbox .lb-close:hover { color: var(--c-pink); }
-    .lightbox .lb-caption {
-      position: absolute; bottom: -36px; left: 0; right: 0;
-      font-family: var(--font-mono); font-size: 12px;
-      color: #fff; opacity: 0.7;
-      text-align: center;
-      letter-spacing: 0.08em; text-transform: uppercase;
-    }
-    @media (max-width: 700px) {
-      .lightbox { padding: 16px; }
-      .lightbox .lb-close { top: -36px; }
-    }
-
-    /* ========== FOOTER ========== */
-    footer {
-      padding: 60px 32px 40px;
-      border-top: 1px solid var(--line);
-      color: var(--ink-soft);
-      font-size: 12px;
-      text-align: center;
-    }
-    footer .contact { margin-top: 8px; color: var(--ink-mute); }
-
-    .loading {
-      padding: 160px 36px; text-align: center;
-      font-family: var(--font-mono); color: var(--ink-soft);
-    }
-    .loading::after { content: '_'; animation: blink 1s steps(2) infinite; color: var(--c-pink); }
-    @keyframes blink { 50% { opacity: 0; } }
-
-    @media (max-width: 900px) {
-      .topbar { padding: 12px 10px 12px 16px; gap: 12px; }
-      .music-toggle { top: 16px; right: 18px; width: 24px; height: 24px; }
-      .music-toggle .icon { width: 10px; height: 10px; }
-      .topbar nav { gap: 10px; }
-      .topbar nav a { font-size: 11px; }
-      main { padding: 0 0 80px; }
-      .hero { margin: 0; padding: 80px 22px 0; cursor: default; }
-      .vision { grid-template-columns: 1fr; gap: 24px; padding: 60px 22px; }
-      .section { padding: 60px 22px; }
-      .showcase-grid { grid-template-columns: 1fr; gap: 20px; }
-      .module-hero { padding: 100px 22px 40px; }
-      .module-hero h1 { font-size: clamp(40px, 12vw, 64px); }
-      .semester-section { padding: 50px 22px; }
-    }
-
-    /* ========== AMBIENT MUSIC TOGGLE (icon-only, pinned top-right) ========== */
-    .music-toggle {
-      position: fixed;
-      top: 20px;
-      right: 22px;
-      z-index: 200;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255,255,255,0.92);
-      border: 1px solid var(--c-pink);
-      color: var(--c-pink);
-      width: 26px;
-      height: 26px;
-      padding: 0;
-      cursor: pointer;
-      border-radius: 2px;
-      transition: background 0.15s, color 0.15s, border-color 0.15s;
-      animation: musicIdlePulse 2.2s ease-in-out infinite;
-    }
-    @keyframes musicIdlePulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 46, 154, 0); }
-      50%      { box-shadow: 0 0 0 6px rgba(255, 46, 154, 0.18); }
-    }
-    .music-toggle:hover {
-      background: var(--c-pink);
-      color: #fff;
-    }
-    .music-toggle .icon {
-      width: 11px; height: 11px;
-      flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .music-toggle .icon svg { width: 100%; height: 100%; }
-    /* PLAYING — solid pink, animated EQ bars */
-    .music-toggle.playing {
-      background: var(--c-pink);
-      color: #fff;
-      animation: none;
-      box-shadow: 0 0 0 4px rgba(255, 46, 154, 0.18);
-    }
-    .music-toggle.playing .icon svg .bar {
-      transform-origin: center bottom;
-      animation: eqBars 0.6s ease-in-out infinite;
-    }
-    .music-toggle.playing .icon svg .bar1 { animation-delay: -0.15s; }
-    .music-toggle.playing .icon svg .bar2 { animation-delay: -0.45s; }
-    .music-toggle.playing .icon svg .bar3 { animation-delay: -0.1s;  }
-    .music-toggle.playing .icon svg .bar4 { animation-delay: -0.3s;  }
-    @keyframes eqBars {
-      0%, 100% { transform: scaleY(0.35); }
-      50%      { transform: scaleY(1.0); }
-    }
-    /* LOADING */
-    .music-toggle.loading {
-      color: var(--ink-mute);
-      border-color: var(--ink-mute);
-      background: rgba(255,255,255,0.92);
-      animation: none;
-    }
-    .music-toggle.loading .icon { animation: musicSpin 0.9s linear infinite; }
-    @keyframes musicSpin {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
-
-    /* ========== SCROLL TO TOP (fixed bottom-right) ========== */
-    .scroll-top {
-      position: fixed;
-      bottom: 24px; right: 24px;
-      z-index: 200;
-      width: 44px; height: 44px;
-      background: var(--ink);
-      color: var(--bg);
-      border: 0;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.22);
-      opacity: 0;
-      pointer-events: none;
-      transform: translateY(10px);
-      transition: opacity 0.25s, transform 0.25s, background 0.15s, box-shadow 0.2s;
-    }
-    .scroll-top.visible {
-      opacity: 1;
-      pointer-events: auto;
-      transform: translateY(0);
-    }
-    .scroll-top:hover {
-      background: var(--c-pink);
-      box-shadow: 0 6px 22px rgba(255,46,154,0.35);
-    }
-    .scroll-top svg { width: 18px; height: 18px; }
-    @media (max-width: 900px) {
-      .scroll-top { bottom: 16px; right: 16px; width: 40px; height: 40px; }
-      .scroll-top svg { width: 16px; height: 16px; }
-    }
-  </style>
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width: 1400px) {
+    .showcase-grid { grid-template-columns: repeat(2, 1fr); }
+    .posts-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 1100px) {
+    .why-section .body { grid-template-columns: 1fr 1fr; gap: 32px; }
+    .posts-grid { grid-template-columns: repeat(2, 1fr); }
+    .module-nav-grid { grid-template-columns: repeat(2, 1fr); }
+    .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+    .article-body .body-inner { column-count: 2; column-gap: 36px; }
+  }
+  @media (max-width: 700px) {
+    header.topbar { padding: 12px 22px; }
+    .why-section .body { grid-template-columns: 1fr; gap: 24px; }
+    .hero { padding: 60px 22px 50px; }
+    .hero .marquee { margin: 0 -22px; }
+    .why-section { padding: 60px 22px; }
+    .section { padding: 60px 22px; }
+    .showcase-grid, .posts-grid, .module-nav-grid {
+      grid-template-columns: 1fr; gap: 16px;
+    }
+    .article-nav { padding: 18px 22px; }
+    .article-cover { height: clamp(220px, 45vh, 380px); }
+    .article-head { padding: 40px 22px 28px; }
+    .article-body { padding: 36px 22px 40px; font-size: 16px; }
+    .article-body .body-inner { column-count: 1; }
+    .article-gallery { padding: 40px 22px; }
+    .article-foot { padding: 40px 22px 50px; }
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+    .gallery-grid .gi:first-child { grid-column: span 2; grid-row: span 2; }
+    footer { padding: 40px 22px; }
+  }
+</style>
 </head>
 <body>
 
-  <header class="topbar">
-    <div class="brand" onclick="navigateTo('home')">DCM<span>·</span>STUDS</div>
-    <button class="music-toggle" id="music-toggle" type="button" aria-label="Play ambient music">
-      <span class="icon" id="music-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="6,4 20,12 6,20" fill="currentColor" stroke="none"/>
-        </svg>
-      </span>
-    </button>
-  </header>
+<header class="topbar">
+  <div class="brand" onclick="navigateTo('home')">DCM<span>·</span>BSURAK</div>
+  <div class="music-toggle" title="Play ambient music"></div>
+</header>
 
-  <main id="app">
-    <div class="loading">loading site data</div>
-  </main>
+<!-- Floating scroll-to-top, visible after 50% scroll -->
+<div class="scroll-top-fab" id="scroll-top-fab" title="Scroll to top" onclick="window.scrollTo({top:0,behavior:'smooth'})"></div>
 
-  <footer>
-    <div id="footer-text"></div>
-    <div class="contact" id="footer-contact"></div>
-  </footer>
+<main id="app"></main>
 
-  <!-- Ambient music — persists across page navigation since it sits outside #app.
-       The stream URL is supplied from _CONFIG (homepage_music_url); a SomaFM
-       fallback is used if the sheet doesn't define one. preload="none" keeps
-       data usage to zero until the user actually presses play. -->
-  <audio id="ambient-audio" preload="none" loop></audio>
-
-  <!-- Scroll to top — appears after the user has scrolled past the hero,
-       smooth-scrolls the page back to 0. Lives outside #app so it's
-       present on every page (home + module pages). -->
-  <button class="scroll-top" id="scroll-top" type="button" aria-label="Scroll to top">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="6,15 12,9 18,15"/>
-    </svg>
-  </button>
-
-  <!-- Lightbox for fullscreen video playback -->
-  <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
-    <div class="lb-frame" onclick="event.stopPropagation()">
-      <button class="lb-close" onclick="closeLightbox(event)" aria-label="Close">✕</button>
-      <div id="lb-iframe-host"></div>
-      <div class="lb-caption" id="lb-caption"></div>
-    </div>
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lb-close" onclick="closeLightbox(event)" aria-label="Close">✕</button>
+  <button class="lb-nav lb-prev" onclick="carouselPrev(event)" aria-label="Previous">←</button>
+  <button class="lb-nav lb-next" onclick="carouselNext(event)" aria-label="Next">→</button>
+  <div class="lb-content" onclick="event.stopPropagation()">
+    <div id="lb-host">▶ Video player placeholder</div>
   </div>
+  <div class="lb-caption" id="lb-caption"></div>
+</div>
 
-  <script>
-    // =================================================================
-    // VIVID PALETTE
-    // =================================================================
-    const MODULE_COLORS = {
-      "Digital Storytelling":   "#FF2E9A",
-      "Creative Coding":        "#0095C5",
-      "Web Dev 1":              "#F0C000",
-      "Web Dev 2":              "#00C265",
-      "UX Design":              "#8B2FFF",
-      "Physical Computing":     "#FF5500",
-      "Game Design":            "#E0008E",
-      "Emerging Technologies":  "#3D5BFF",
-      "Cyber Security":         "#FF2E9A",
-      "Creative Photography":   "#F0C000",
-      "Short Film Drama":       "#8B2FFF",
-      "Short Film Documentary": "#FF5500"
+<script>
+  // =================================================================
+  // MOCK DATA — modules with videos, posts with mixed types,
+  // one full article for previewing the article page
+  // =================================================================
+  // SITE data is loaded from Google Apps Script at boot.
+  // Replace APPS_SCRIPT_URL with your /exec deployment URL.
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyjBG-LPU5Ve3XeUIQfAcPARlKXHMkDBBc_p-z7kTuhMb421Qx73k96txl-hzkk8nPc/exec';
+  let SITE = null;
+  let LOAD_ERROR = null;
+
+  async function loadSiteData() {
+    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PASTE') === 0) {
+      LOAD_ERROR = 'Apps Script URL not configured.';
+      renderRoute();
+      return;
+    }
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, { method: 'GET' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      SITE = data;
+      renderRoute();
+    } catch (err) {
+      LOAD_ERROR = err.message || String(err);
+      renderRoute();
+    }
+  }
+
+
+  // ============================================================
+  // SCROLL MEMORY — when user clicks "back" they land exactly
+  // where they diverged from. Works for in-page back links AND
+  // the browser back/forward buttons.
+  // ============================================================
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+  const scrollState = {};
+  let previousHash = window.location.hash;
+
+  // ============================================================
+  // CONFIG HELPERS — parse {accent} markup, \n line breaks, etc
+  // ============================================================
+  function cfgEscape(s) { return String(s == null ? '' : s)
+    .replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
+
+  function renderConfigHeading(text) {
+    // Replaces {word} with accented span, and \n with <br>
+    if (!text) return '';
+    let s = cfgEscape(text);
+    s = s.replace(/\{([^}]+)\}/g, '<span class="accent">$1</span>');
+    s = s.replace(/\\n/g, '<br>');
+    s = s.replace(/\n/g, '<br>');
+    return s;
+  }
+
+
+  function updateBrand(cfg) {
+    const el = document.querySelector('.brand');
+    if (el && cfg) el.innerHTML = brandHtml(cfg);
+  }
+
+  function brandHtml(cfg) {
+    const pre  = cfgEscape(cfg.site_brand_pre  || 'DCM');
+    const sep  = cfgEscape(cfg.site_brand_sep  || '·');
+    const post = cfgEscape(cfg.site_brand_post || 'BSURAK');
+    return pre + '<span>' + sep + '</span>' + post;
+  }
+
+  // =================================================================
+  // ROUTING
+  // =================================================================
+  let currentFilter = 'all';
+
+  function navigateTo(route, arg) {
+    // Don't scroll here — hashchange handler saves scroll, renderRoute
+    // either restores the saved position or scrolls to top of new page.
+    if (route === 'home') window.location.hash = '';
+    else if (route === 'post') window.location.hash = 'post=' + arg;
+    else if (route === 'module') window.location.hash = 'module=' + encodeURIComponent(arg);
+  }
+
+  function currentRoute() {
+    const h = window.location.hash.slice(1);
+    if (h.startsWith('post=')) return { type: 'post', slug: h.slice(5) };
+    if (h.startsWith('module=')) return { type: 'module', name: decodeURIComponent(h.slice(7)) };
+    return { type: 'home' };
+  }
+
+  function renderRoute() {
+    if (!SITE && !LOAD_ERROR) { renderHome(); return; }
+    if (LOAD_ERROR) { renderHome(); return; }
+    const r = currentRoute();
+    if (r.type === 'post') {
+      const post = SITE.posts.find(p => p.slug === r.slug);
+      if (post) renderArticle(post);
+      else renderHome();
+    } else if (r.type === 'module') {
+      // For module page we look up in moduleFull which has ALL semester data
+      const fullMod = SITE.moduleFull && SITE.moduleFull[r.name];
+      const homeMod = SITE.modules.find(m => m.tab_name === r.name);
+      const mod = fullMod || homeMod;
+      if (mod) renderModule(mod);
+      else renderHome();
+    } else {
+      renderHome();
+    }
+    restoreScrollOrTop_();
+  }
+
+  function restoreScrollOrTop_() {
+    const saved = scrollState[window.location.hash || ''];
+    if (typeof saved === 'number') {
+      // Wait one frame so the DOM is laid out, then jump to saved position
+      requestAnimationFrame(function () { window.scrollTo(0, saved); });
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }
+
+  window.addEventListener('hashchange', function () {
+    // Save the scroll position of the page we just left
+    scrollState[previousHash || ''] = window.scrollY;
+    previousHash = window.location.hash;
+    renderRoute();
+  });
+
+  // =================================================================
+  // HOME PAGE
+  // =================================================================
+  function renderHome() {
+    if (LOAD_ERROR) {
+      document.getElementById('app').innerHTML = '<div style="padding:120px 60px;text-align:center;font-family:var(--font-display);color:var(--ink-soft)"><div style="font-size:42px;font-weight:900;color:var(--ink);margin-bottom:18px;letter-spacing:-0.02em">Site data could not load.</div><div style="font-size:14px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.1em">' + escapeHtml(LOAD_ERROR) + '</div><div style="margin-top:30px;font-size:11px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.16em;text-transform:uppercase">Check the Apps Script URL in index.html and the sheet permissions.</div></div>';
+      return;
+    }
+    if (!SITE) {
+      document.getElementById('app').innerHTML = '<div style="padding:160px 60px;text-align:center;font-family:var(--font-mono);color:var(--ink-mute);font-size:11px;letter-spacing:0.24em;text-transform:uppercase">Loading…</div>';
+      return;
+    }
+    const cfg = SITE.config;
+    const featuredPosts = SITE.posts.filter(p => p.featured).slice(0, 4);
+    const allPosts = filterPosts(currentFilter);
+    const counts = {
+      all: SITE.posts.length,
+      photo: SITE.posts.filter(p => p.type === 'photo').length,
+      story: SITE.posts.filter(p => p.type === 'story').length,
+      text: SITE.posts.filter(p => p.type === 'text').length
     };
-    function colorFor(name) { return MODULE_COLORS[name] || "#FF2E9A"; }
 
-    // =================================================================
-    // CONSTELLATION ENGINE — colorful on WHITE (multiply blend)
-    // =================================================================
-    const PALETTE = [
-      [255, 46, 154],
-      [255, 85, 0],
-      [240, 192, 0],
-      [0, 194, 101],
-      [0, 149, 197],
-      [61, 91, 255],
-      [139, 47, 255],
-      [224, 0, 142]
-    ];
-    function lerpColor(a, b, t) { return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
-    function rgba(c, a) { return 'rgba('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+','+a+')'; }
+    document.getElementById('app').innerHTML = [
+      // HERO — all text from cfg
+      '<section class="hero">',
+      '  <div class="eyebrow">' + cfgEscape(cfg.hero_eyebrow || '') + '</div>',
+      '  <h1>' + renderConfigHeading(cfg.hero_h1 || 'Dept of {Computing}\n& Media') + '</h1>',
+      '  <p class="tagline">' + cfgEscape(cfg.hero_tagline || '') + '</p>',
+      '</section>',
+      '<div class="hero-marquee"><span class="track">' + cfgEscape((cfg.marquee_text || '') + ' ' + (cfg.marquee_text || '')) + '</span></div>',
 
-    class ChromaticField {
-      constructor(canvas) {
-        this.canvas = canvas;
-        this.ctx = canvas.getContext('2d', { alpha: false });
-        this.dpr = Math.min(window.devicePixelRatio || 1, 2);
-        this.particles = [];
-        this.pulses = [];
-        this.mouse = { x: -9999, y: -9999, active: false };
-        this.cursorColor = [120, 120, 130];
-        this.running = false;
-        this.visible = true;
+      // WHY section
+      '<section class="why-section">',
+      '  <div class="eyebrow">' + cfgEscape(cfg.why_eyebrow || 'Why study here') + '</div>',
+      '  <h2>' + renderConfigHeading(cfg.why_h2 || '') + '</h2>',
+      '  <div class="body">',
+      '    <p>' + markdownInline(cfg.why_body1 || cfg.whyBody1 || '') + '</p>',
+      '    <p>' + markdownInline(cfg.why_body2 || cfg.whyBody2 || '') + '</p>',
+      '    <p>' + markdownInline(cfg.why_body3 || cfg.whyBody3 || '') + '</p>',
+      '  </div>',
+      '</section>',
 
-        this.linkDist = 130;
-        this.cursorRadius = 300;
-        this.cursorPull = 0.05;
-        this.cursorAura = 160;
-        this.particleDrift = 0.22;
-        this.particleDamping = 0.94;
-        this.bgFade = 0.10;
-        this.bgColor = [255, 255, 255];
+      // BEST OF LAST SEMESTER (videos)
+      '<section class="section">',
+      '  <div class="section-header">',
+      '    <h2>Best of <span class="accent">Last Semester</span></h2>',
+      '    <div class="meta">' + cfg.current_semester + ' · ' + SITE.modules.length + ' modules</div>',
+      '  </div>',
+      '  <div class="showcase-grid">',
+      SITE.modules.map(showcaseHtml).join(''),
+      '  </div>',
+      '</section>',
 
-        this.resize();
-        this.spawn();
+      // LATEST AT OUR DEPT (department posts only, featured first, 4 cards)
+      '<section class="section tinted">',
+      '  <div class="section-header">',
+      '    <h2>Latest at our <span class="accent">Dept</span></h2>',
+      '    <div class="meta">Department news, photos &amp; stories</div>',
+      '  </div>',
+      '  <div class="posts-grid">',
+      featuredPosts.map(postCardHtml).join(''),
+      '  </div>',
+      '</section>',
 
-        this._onMouseMove = this._onMouseMove.bind(this);
-        this._onMouseLeave = this._onMouseLeave.bind(this);
-        this._onClick = this._onClick.bind(this);
-        this._onResize = this._onResize.bind(this);
+      // ALL POSTS archive with filter chips
+      '<section class="section">',
+      '  <div class="section-header">',
+      '    <h2>All <span class="accent">Posts</span></h2>',
+      '    <div class="meta">' + counts.all + ' posts · filter by type</div>',
+      '  </div>',
+      '  <div class="filter-chips">',
+      '    <div class="chip ' + (currentFilter === 'all' ? 'active' : '') + '" onclick="setFilter(\'all\')">All <span class="num">' + counts.all + '</span></div>',
+      '    <div class="chip ' + (currentFilter === 'photo' ? 'active' : '') + '" onclick="setFilter(\'photo\')">Photos <span class="num">' + counts.photo + '</span></div>',
+      '    <div class="chip ' + (currentFilter === 'story' ? 'active' : '') + '" onclick="setFilter(\'story\')">Stories <span class="num">' + counts.story + '</span></div>',
+      '    <div class="chip ' + (currentFilter === 'text' ? 'active' : '') + '" onclick="setFilter(\'text\')">Reads <span class="num">' + counts.text + '</span></div>',
+      '  </div>',
+      '  <div class="posts-grid">',
+      allPosts.map(postCardHtml).join(''),
+      '  </div>',
+      '</section>',
 
-        this.host = canvas.parentElement;
-        this.host.addEventListener('mousemove', this._onMouseMove);
-        this.host.addEventListener('mouseleave', this._onMouseLeave);
-        this.host.addEventListener('click', this._onClick);
-        window.addEventListener('resize', this._onResize);
-        if (window.visualViewport) window.visualViewport.addEventListener('resize', this._onResize);
+      // ALL MODULES
+      '<section class="section">',
+      '  <div class="section-header">',
+      '    <h2>All <span class="accent">Modules</span></h2>',
+      '    <div class="meta">' + SITE.allModules.length + ' modules · pick one to explore</div>',
+      '  </div>',
+      '  <div class="module-nav-grid">',
+      SITE.allModules.map((m, i) => '<div class="module-card" onclick="alert(\'Module page: ' + escapeJs(m.name) + '\')">'
+        + '<div class="name">' + escapeHtml(m.name) + '</div>'
+        + '</div>').join(''),
+      '  </div>',
+      '</section>',
 
-        this._io = new IntersectionObserver(entries => { this.visible = entries[0].isIntersecting; }, { threshold: 0.01 });
-        this._io.observe(canvas);
+      // FOOTER — centred single-line
+      '<footer>',
+      '  ' + escapeHtml(cfg.footer_text) + ' <span class="sep">|</span> <span class="contact">' + escapeHtml(cfg.footer_contact) + '</span>',
+      '</footer>'
+    ].join('');
+  }
 
-        this._onVisibility = () => { this.visible = !document.hidden; };
-        document.addEventListener('visibilitychange', this._onVisibility);
+  function filterPosts(filter) {
+    if (filter === 'all') return SITE.posts;
+    return SITE.posts.filter(p => p.type === filter);
+  }
 
-        this.paintBg();
-      }
-
-      paintBg() { this.ctx.fillStyle = rgba(this.bgColor, 1); this.ctx.fillRect(0, 0, this.w, this.h); }
-
-      resize() {
-        const w = this.canvas.clientWidth;
-        const h = this.canvas.clientHeight;
-        this.canvas.width = Math.max(1, Math.floor(w * this.dpr));
-        this.canvas.height = Math.max(1, Math.floor(h * this.dpr));
-        this.w = w; this.h = h;
-        this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-        this.paintBg();
-      }
-
-      spawn() {
-        const area = this.w * this.h;
-        const count = Math.min(220, Math.max(100, Math.floor(area / 9000)));
-        this.particles = [];
-        for (let i = 0; i < count; i++) {
-          this.particles.push({
-            x: Math.random() * this.w, y: Math.random() * this.h,
-            vx: (Math.random() - 0.5) * this.particleDrift,
-            vy: (Math.random() - 0.5) * this.particleDrift,
-            r: 1.5 + Math.random() * 2.2,
-            heat: 0,
-            color: PALETTE[Math.floor(Math.random() * PALETTE.length)].slice()
-          });
-        }
-      }
-
-      _onResize() { this.resize(); this.spawn(); }
-      _onMouseMove(e) {
-        const r = this.host.getBoundingClientRect();
-        this.mouse.x = e.clientX - r.left;
-        this.mouse.y = e.clientY - r.top;
-        this.mouse.active = true;
-      }
-      _onMouseLeave() { this.mouse.active = false; this.mouse.x = -9999; this.mouse.y = -9999; }
-      _onClick(e) {
-        const r = this.host.getBoundingClientRect();
-        this.pulses.push({ x: e.clientX - r.left, y: e.clientY - r.top, t0: performance.now(), life: 1700, color: this.cursorColor.slice() });
-        if (this.pulses.length > 5) this.pulses.shift();
-      }
-
-      start() {
-        if (this.running) return;
-        this.running = true;
-        const loop = () => {
-          if (!this.running) return;
-          if (this.visible) this.step();
-          this._raf = requestAnimationFrame(loop);
-        };
-        this._raf = requestAnimationFrame(loop);
-      }
-      stop() {
-        this.running = false;
-        if (this._raf) cancelAnimationFrame(this._raf);
-        this.host.removeEventListener('mousemove', this._onMouseMove);
-        this.host.removeEventListener('mouseleave', this._onMouseLeave);
-        this.host.removeEventListener('click', this._onClick);
-        window.removeEventListener('resize', this._onResize);
-        if (window.visualViewport) window.visualViewport.removeEventListener('resize', this._onResize);
-        document.removeEventListener('visibilitychange', this._onVisibility);
-        if (this._io) this._io.disconnect();
-      }
-
-      step() {
-        const ctx = this.ctx;
-        const w = this.w, h = this.h;
-        const now = performance.now();
-
-        // fade — white wash, the trails read as soft color smears
-        ctx.fillStyle = rgba(this.bgColor, this.bgFade + 0.86);
-        ctx.fillRect(0, 0, w, h);
-
-        for (let i = this.pulses.length - 1; i >= 0; i--) {
-          if (now - this.pulses[i].t0 > this.pulses[i].life) this.pulses.splice(i, 1);
-        }
-
-        const mx = this.mouse.x, my = this.mouse.y, mActive = this.mouse.active;
-        const cr = this.cursorRadius;
-        const linkD = this.linkDist;
-        const linkD2 = linkD * linkD;
-
-        for (let i = 0; i < this.particles.length; i++) {
-          const p = this.particles[i];
-          p.vx += (Math.random() - 0.5) * 0.025;
-          p.vy += (Math.random() - 0.5) * 0.025;
-
-          if (mActive) {
-            const dx = mx - p.x, dy = my - p.y;
-            const d2 = dx * dx + dy * dy;
-            if (d2 < cr * cr) {
-              const d = Math.sqrt(d2) || 0.0001;
-              const fall = 1 - d / cr;
-              p.vx += (dx / d) * this.cursorPull * fall * 2.8;
-              p.vy += (dy / d) * this.cursorPull * fall * 2.8;
-              if (d < 80) {
-                p.heat = Math.min(1, p.heat + 0.12);
-                this.cursorColor = lerpColor(this.cursorColor, p.color, 0.07 * fall);
-              }
-            }
-          }
-
-          for (let k = 0; k < this.pulses.length; k++) {
-            const pu = this.pulses[k];
-            const ageN = (now - pu.t0) / pu.life;
-            const ringR = ageN * 380;
-            const dx = p.x - pu.x, dy = p.y - pu.y;
-            const d = Math.sqrt(dx * dx + dy * dy);
-            if (Math.abs(d - ringR) < 26) {
-              p.heat = Math.min(1, p.heat + 0.85 * (1 - ageN));
-              if (d > 0) {
-                p.vx += (dx / d) * 0.5 * (1 - ageN);
-                p.vy += (dy / d) * 0.5 * (1 - ageN);
-              }
-              p.color = lerpColor(p.color, pu.color, 0.06);
-            }
-          }
-
-          p.vx *= this.particleDamping;
-          p.vy *= this.particleDamping;
-          p.x += p.vx;
-          p.y += p.vy;
-
-          if (p.x < -10) p.x = w + 10;
-          if (p.x > w + 10) p.x = -10;
-          if (p.y < -10) p.y = h + 10;
-          if (p.y > h + 10) p.y = -10;
-
-          p.heat *= 0.94;
-        }
-
-        // multiply blend — on white, this deepens colors instead of washing
-        ctx.globalCompositeOperation = 'multiply';
-
-        ctx.lineWidth = 1;
-        for (let i = 0; i < this.particles.length; i++) {
-          const a = this.particles[i];
-          for (let j = i + 1; j < this.particles.length; j++) {
-            const b = this.particles[j];
-            const dx = a.x - b.x, dy = a.y - b.y;
-            const d2 = dx * dx + dy * dy;
-            if (d2 < linkD2) {
-              const d = Math.sqrt(d2);
-              const t = 1 - d / linkD;
-              const heat = Math.max(a.heat, b.heat);
-              const alpha = t * 0.32 + heat * 0.55;
-              const blended = lerpColor(a.color, b.color, 0.5);
-              ctx.strokeStyle = rgba(blended, alpha);
-              ctx.beginPath();
-              ctx.moveTo(a.x, a.y);
-              ctx.lineTo(b.x, b.y);
-              ctx.stroke();
-            }
-          }
-        }
-
-        for (let i = 0; i < this.particles.length; i++) {
-          const p = this.particles[i];
-          const r = p.r + p.heat * 2.2;
-          const alpha = 0.7 + p.heat * 0.3;
-          ctx.fillStyle = rgba(p.color, alpha);
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        for (let k = 0; k < this.pulses.length; k++) {
-          const pu = this.pulses[k];
-          const ageN = (now - pu.t0) / pu.life;
-          const ringR = ageN * 380;
-          const alpha = (1 - ageN) * 0.85;
-          ctx.strokeStyle = rgba(pu.color, alpha);
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.arc(pu.x, pu.y, ringR, 0, Math.PI * 2);
-          ctx.stroke();
-
-          const grd = ctx.createRadialGradient(pu.x, pu.y, 0, pu.x, pu.y, ringR);
-          grd.addColorStop(0, rgba(pu.color, alpha * 0.25));
-          grd.addColorStop(1, rgba(pu.color, 0));
-          ctx.fillStyle = grd;
-          ctx.beginPath();
-          ctx.arc(pu.x, pu.y, ringR, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        if (mActive) {
-          const aura = this.cursorAura;
-          const grd = ctx.createRadialGradient(mx, my, 0, mx, my, aura);
-          grd.addColorStop(0, rgba(this.cursorColor, 0.45));
-          grd.addColorStop(0.5, rgba(this.cursorColor, 0.15));
-          grd.addColorStop(1, rgba(this.cursorColor, 0));
-          ctx.fillStyle = grd;
-          ctx.beginPath();
-          ctx.arc(mx, my, aura, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        ctx.globalCompositeOperation = 'source-over';
-
-        // crosshair drawn over (normal blend) so it reads cleanly
-        if (mActive) {
-          ctx.strokeStyle = rgba(this.cursorColor, 0.85);
-          ctx.lineWidth = 1.2;
-          ctx.beginPath();
-          ctx.arc(mx, my, 20, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(mx - 36, my); ctx.lineTo(mx - 24, my);
-          ctx.moveTo(mx + 24, my); ctx.lineTo(mx + 36, my);
-          ctx.moveTo(mx, my - 36); ctx.lineTo(mx, my - 24);
-          ctx.moveTo(mx, my + 24); ctx.lineTo(mx, my + 36);
-          ctx.stroke();
-        }
+  function setFilter(filter) {
+    currentFilter = filter;
+    renderHome();
+    // scroll to All Posts section
+    const sections = document.querySelectorAll('.section');
+    for (const s of sections) {
+      if (s.querySelector('.section-header h2')?.textContent.includes('Posts')) {
+        s.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        break;
       }
     }
+  }
 
-    // =================================================================
-    // HEX READOUTS
-    // =================================================================
-    const HEX = '0123456789ABCDEF';
-    function randHex(n) { let s = ''; for (let i = 0; i < n; i++) s += HEX[Math.floor(Math.random() * 16)]; return s; }
-    function randBin(n) { let s = ''; for (let i = 0; i < n; i++) s += (Math.random() < 0.5 ? '0' : '1'); return s; }
-    let hexTimer = null;
-    function startHexReadouts() {
-      stopHexReadouts();
-      const tl = document.querySelector('.hero .hex.tl');
-      const tr = document.querySelector('.hero .hex.tr');
-      const bl = document.querySelector('.hero .hex.bl');
-      const br = document.querySelector('.hero .hex.br');
-      function tick() {
-        if (tl) tl.textContent = 'NODE   0x' + randHex(4) + '\nFIELD  ' + randHex(8) + '\nSTATE  ' + randBin(8);
-        if (tr) tr.textContent = randHex(8) + '\n' + randHex(8) + '\n∾ ' + (Math.floor(Math.random()*999)).toString().padStart(3,'0');
-        if (bl) bl.textContent = '> ' + randBin(16);
-        if (br) br.textContent = 'v1.5 · ' + randHex(2) + ':' + randHex(2) + ':' + randHex(2);
-      }
-      tick();
-      hexTimer = setInterval(tick, 200);
-    }
-    function stopHexReadouts() { if (hexTimer) { clearInterval(hexTimer); hexTimer = null; } }
+  // =================================================================
+  // SHOWCASE CARD — video module showcase. NO pos-tag, NO views.
+  // =================================================================
+  function showcaseHtml(module) {
+    const linkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>';
+    const featLink = module.featured.link
+      ? '<a class="link-btn" href="' + escapeAttr(module.featured.link) + '" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="Visit project">' + linkSvg + '</a>'
+      : '';
+    return [
+      '<div class="showcase" style="--c:' + module.color + '">',
+      '  <div class="featured" onclick="openLightbox(\'' + escapeJs(module.featured.student) + ' · ' + escapeJs(module.display_name) + '\')">',
+      '    ' + featLink,
+      '    <img src="' + module.featured.thumb + '" alt="" loading="lazy">',
+      '    <div class="play"></div>',
+      '    <div class="overlay">',
+      '      <span class="marker"></span>',
+      '      <span class="name">' + escapeHtml(module.featured.student) + '</span>',
+      '    </div>',
+      '  </div>',
+      '  <div class="mod" onclick="navigateTo(\'module\',\'' + escapeJs(module.tab_name) + '\')">',
+      '    <div class="mname">' + escapeHtml(module.display_name) + '</div>',
+      '    <div class="tutor">' + escapeHtml(module.tutor) + '</div>',
+      '  </div>',
+      '  <div class="strip">',
+      module.minis.map(m => '<div class="mini-card" onclick="openLightbox(\'' + escapeJs(m.student) + ' · ' + escapeJs(module.display_name) + '\')"><div class="mini"><img src="' + m.thumb + '" alt=""></div><div class="mini-name">' + escapeHtml(m.student) + '</div></div>').join(''),
+      Array(Math.max(0, 3 - module.minis.length)).fill('<div class="mini-card empty"><div class="mini"></div><div class="mini-name">·</div></div>').join(''),
+      '  </div>',
+      '  <div class="view-all" onclick="navigateTo(\'module\',\'' + escapeJs(module.tab_name) + '\')"><span>View all ' + (module.minis.length + 1) + ' projects</span><span>→</span></div>',
+      '</div>'
+    ].join('');
+  }
 
-    // =================================================================
-    // CLIENT
-    // =================================================================
-    //
-    // ┌──────────────────────────────────────────────────────────────┐
-    // │  PASTE YOUR DEPLOYED APPS SCRIPT URL HERE                    │
-    // │                                                              │
-    // │  Get this from: Apps Script editor → Deploy → Manage         │
-    // │  deployments → copy the /exec URL.                           │
-    // │                                                              │
-    // │  When you redeploy a new version of the Apps Script, the     │
-    // │  /exec URL stays the same — no need to update this file.     │
-    // │  Just use Manage Deployments → Edit pencil → New version.    │
-    // └──────────────────────────────────────────────────────────────┘
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzh0kJ2YPpM1G0s00gQcySfItaARR_kGrvZZ9z4geHjNBddS9RDU9DHf55_XhplV1u6XA/exec";
+  // =================================================================
+  // POST CARD — photo, story, or text. NO colour blocks, neutral.
+  // Click → article page (or lightbox for video posts).
+  // =================================================================
+  function postCardHtml(post) {
+    const open = post.type === 'text' || post.type === 'photo' || post.type === 'story' || post.type === 'mixed'
+      ? 'navigateTo(\'post\', \'' + escapeJs(post.slug) + '\')'
+      : 'openLightbox(\'' + escapeJs(post.heading) + '\')';
 
-    let SITE = null;
-    let currentField = null;
-
-    function isUrlConfigured() {
-      return APPS_SCRIPT_URL && APPS_SCRIPT_URL.indexOf("PASTE_") !== 0;
-    }
-
-    // Fire-and-forget POST that increments the view count for a video.
-    // Sent as application/x-www-form-urlencoded so the browser treats
-    // it as a "simple" CORS request — no preflight needed when calling
-    // the Apps Script from the GitHub Pages origin.
-    function incrementView(videoId) {
-      if (!isUrlConfigured() || !videoId) return;
-      try {
-        fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          body: new URLSearchParams({ video_id: videoId })
-        }).catch(function() {});  // swallow errors silently
-      } catch (err) {
-        // older browser fallback — ignore
-      }
-    }
-
-    // Format a raw view count for display in the ribbon.
-    //   0..999       → "0", "1", ..., "999"
-    //   1,000..9,999 → "1.2K"
-    //   10K..999K    → "12K", "147K", "999K"
-    //   1M+          → "1.2M" / "12M"
-    function formatViews(n) {
-      n = Math.max(0, Math.floor(Number(n) || 0));
-      if (n < 1000) return String(n);
-      if (n < 10000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-      if (n < 1000000) return Math.floor(n / 1000) + 'K';
-      if (n < 10000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-      return Math.floor(n / 1000000) + 'M';
-    }
-
-    // Fetch site data from the deployed Apps Script. The Apps Script
-    // serves JSON from its doGet() handler. forceRefresh appends a
-    // cachebuster query param so the browser doesn't serve a stale
-    // response — useful after the user has updated the sheet.
-    function fetchSiteData(forceRefresh, onSuccess, onFailure) {
-      if (!isUrlConfigured()) {
-        onFailure(new Error("Site URL not configured. Edit APPS_SCRIPT_URL near the top of the <script> block."));
-        return;
-      }
-      const sep = APPS_SCRIPT_URL.indexOf("?") === -1 ? "?" : "&";
-      const url = forceRefresh ? (APPS_SCRIPT_URL + sep + "_=" + Date.now()) : APPS_SCRIPT_URL;
-      fetch(url, { method: "GET", redirect: "follow" })
-        .then(function(r) {
-          if (!r.ok) throw new Error("HTTP " + r.status);
-          return r.json();
-        })
-        .then(function(data) { onSuccess(data); })
-        .catch(function(err) { onFailure(err); });
-    }
-
-    function load() {
-      fetchSiteData(false,
-        function(data) { SITE = data; renderShell(); renderRoute(); },
-        function(err) {
-          console.error("load failed:", err);
-          document.getElementById('app').innerHTML =
-            '<div class="loading" style="padding:120px 60px;color:var(--ink-soft);max-width:720px;">' +
-            '<div style="font-family:var(--font-display);font-weight:900;font-size:28px;color:var(--ink);margin-bottom:14px;">Could not load site data</div>' +
-            '<div style="font-family:var(--font-mono);font-size:13px;line-height:1.6;">' +
-            escapeHtml(String(err && err.message ? err.message : err)) +
-            '</div>' +
-            '<div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-mute);margin-top:24px;line-height:1.55;">' +
-            'Check that APPS_SCRIPT_URL near the top of the page source points to a deployed Apps Script /exec URL, and that the deployment is set to <em>Anyone</em> access.' +
-            '</div>' +
-            '</div>';
-        }
-      );
-    }
-    function refreshData() {
-      stopHeroFx();
-      document.getElementById('app').innerHTML = '<div class="loading">refreshing</div>';
-      load();
-    }
-    function stopHeroFx() {
-      if (currentField) { currentField.stop(); currentField = null; }
-      stopHexReadouts();
-    }
-
-    function currentRoute() {
-      const hash = (window.location.hash || '').replace(/^#/, '');
-      if (!hash || hash === 'home') return { type: 'home' };
-      if (hash.indexOf('module=') === 0) return { type: 'module', name: decodeURIComponent(hash.slice(7)) };
-      return { type: 'home' };
-    }
-    function navigateTo(route, name) {
-      // Scroll instantly to top BEFORE the hash change. Smooth scroll
-      // here races the hashchange-triggered re-render: on mobile, the
-      // innerHTML replacement interrupts the scroll animation and the
-      // user lands at an unpredictable position. Instant scroll lands
-      // them at top before the render even starts.
-      window.scrollTo(0, 0);
-      if (route === 'home') window.location.hash = '';
-      else if (route === 'module') window.location.hash = 'module=' + encodeURIComponent(name);
-    }
-    window.addEventListener('hashchange', renderRoute);
-
-    function renderShell() {
-      // (topbar module nav was removed — module name is shown prominently
-      //  on the module page itself, so the duplicate strip in the header
-      //  was redundant. Navigation between modules now happens via the
-      //  All Modules grid on the home page.)
-      document.getElementById('footer-text').textContent = SITE.config.footer_text || '';
-      document.getElementById('footer-contact').textContent = SITE.config.footer_contact || '';
-    }
-    function setActiveNav(name) {
-      // no-op since the topbar nav is gone — kept as a stub so older
-      // call sites don't error out
-    }
-
-    function renderRoute() {
-      if (!SITE) return;
-      stopHeroFx();
-      const r = currentRoute();
-      const nav = document.getElementById('nav-modules');
-      if (r.type === 'module') {
-        if (nav) nav.style.display = '';
-        renderModule(r.name);
-        setActiveNav(r.name);
-      } else {
-        if (nav) nav.style.display = 'none';   // hide module links on homepage
-        renderHome();
-        setActiveNav(null);
-      }
-      // Safety net: ensure the user is at top of the new page after
-      // every render. Some mobile browsers retain the previous scroll
-      // position even after innerHTML is replaced — this guarantees a
-      // clean top-of-page landing.
-      window.scrollTo(0, 0);
-    }
-
-    // ============ HOMEPAGE ============
-    function renderHome() {
-      const cfg = SITE.config;
-      const currentSem = SITE.current_semester;
-      const modulesInCurrent = SITE.modules.filter(function(m) { return m.in_current_semester && m.latest_block && m.latest_block.videos.length; });
-      const allModules = SITE.modules.filter(function(m) { return m.latest_block && m.latest_block.videos.length; });
-
-      const html = []
-        .concat([
-          '<section class="hero">',
-          // drifting colour orbs (z-index: 0, behind STUDS)
-          '  <div class="orb o1"></div>',
-          '  <div class="orb o2"></div>',
-          '  <div class="orb o3"></div>',
-          '  <div class="orb o4"></div>',
-          '  <div class="ghost-word">STUDS</div>',
-          // ten floating tech icons
-          '  <div class="float-icon f1" style="color: var(--c-pink)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"><path d="M8 18h10l4-6h20l4 6h10v32H8z"/><circle cx="32" cy="32" r="9" fill="currentColor" stroke="none"/></svg></div>',
-          '  <div class="float-icon f2" style="color: var(--c-violet)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22,16 8,32 22,48"/><polyline points="42,16 56,32 42,48"/><line x1="36" y1="14" x2="28" y2="50" stroke-width="3.5"/></svg></div>',
-          '  <div class="float-icon f3" style="color: var(--c-yellow)"><svg viewBox="0 0 64 64" fill="currentColor"><path d="M44 8v32.5a10 10 0 1 1-6-9.2V18l-18 4v22.5a10 10 0 1 1-6-9.2V18z"/></svg></div>',
-          '  <div class="float-icon f4" style="color: var(--c-cyan)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="24" y="8" width="16" height="30" rx="8" fill="currentColor" stroke="none"/><path d="M14 32a18 18 0 0 0 36 0"/><line x1="32" y1="50" x2="32" y2="58"/><line x1="22" y1="58" x2="42" y2="58"/></svg></div>',
-          '  <div class="float-icon f5" style="color: var(--c-green)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"><circle cx="32" cy="32" r="26" fill="currentColor" stroke="none"/><polygon points="26,20 26,44 46,32" fill="#E8EAEE" stroke="none"/></svg></div>',
-          '  <div class="float-icon f6" style="color: var(--c-orange)"><svg viewBox="0 0 64 64" fill="currentColor"><rect x="6" y="12" width="52" height="40" rx="2"/><rect x="10" y="14" width="6" height="36" fill="#E8EAEE"/><rect x="48" y="14" width="6" height="36" fill="#E8EAEE"/><circle cx="13" cy="22" r="2" fill="currentColor"/><circle cx="13" cy="32" r="2" fill="currentColor"/><circle cx="13" cy="42" r="2" fill="currentColor"/><circle cx="51" cy="22" r="2" fill="currentColor"/><circle cx="51" cy="32" r="2" fill="currentColor"/><circle cx="51" cy="42" r="2" fill="currentColor"/><rect x="20" y="18" width="24" height="28" fill="#E8EAEE"/></svg></div>',
-          '  <div class="float-icon f7" style="color: var(--c-blue)"><svg viewBox="0 0 64 64" fill="currentColor"><path d="M14 8l38 22-16 4 8 18-6 4-8-18-12 12z"/></svg></div>',
-          '  <div class="float-icon f8" style="color: var(--c-magenta)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4"><rect x="6" y="12" width="52" height="40" rx="3" fill="currentColor" stroke="none"/><polyline points="16,28 24,36 16,44" stroke="#E8EAEE" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="28" y1="44" x2="44" y2="44" stroke="#E8EAEE" stroke-width="4" stroke-linecap="round"/></svg></div>',
-          '  <div class="float-icon f9" style="color: var(--c-pink)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 36a24 24 0 0 1 48 0"/><rect x="6" y="34" width="14" height="22" rx="3" fill="currentColor" stroke="none"/><rect x="44" y="34" width="14" height="22" rx="3" fill="currentColor" stroke="none"/></svg></div>',
-          '  <div class="float-icon f10" style="color: var(--c-green)"><svg viewBox="0 0 64 64" fill="currentColor"><polygon points="36,4 12,36 28,36 22,60 50,24 34,24"/></svg></div>',
-          // headline block
-          '  <div class="headline-wrap">',
-          '    <div class="eyebrow"><span class="bracket">[</span> ' + escapeHtml(cfg.site_subtitle || 'Bath Spa University · RAK Campus') + ' <span class="bracket">]</span></div>',
-          '    <h1 class="headline">',
-          '      <span class="row">Dept of <span class="inline-icon" style="color: var(--c-pink)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"><path d="M8 18h10l4-6h20l4 6h10v32H8z"/><circle cx="32" cy="32" r="9" fill="currentColor" stroke="none"/></svg></span> Computing</span>',
-          '      <span class="row">&amp; <span class="inline-icon" style="color: var(--c-yellow)"><svg viewBox="0 0 64 64" fill="currentColor"><path d="M44 8v32.5a10 10 0 1 1-6-9.2V18l-18 4v22.5a10 10 0 1 1-6-9.2V18z"/></svg></span> Media</span>',
-          '    </h1>',
-          '    <p class="tagline">',
-          '      <span class="word"><span class="inline-icon" style="color: var(--c-violet)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><polyline points="22,16 8,32 22,48"/><polyline points="42,16 56,32 42,48"/></svg></span> Code,</span>',
-          '      <span class="word"><span class="inline-icon" style="color: var(--c-cyan)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="5"><rect x="8" y="14" width="48" height="36" rx="3" fill="currentColor" stroke="none"/><circle cx="24" cy="28" r="5" fill="#E8EAEE"/><polyline points="14,46 28,32 42,42 52,34" stroke="#E8EAEE" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span> image,</span>',
-          '      <span class="word"><span class="inline-icon" style="color: var(--c-orange)"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><rect x="24" y="8" width="16" height="28" rx="8" fill="currentColor" stroke="none"/><path d="M14 30a18 18 0 0 0 36 0"/><line x1="32" y1="48" x2="32" y2="56"/></svg></span> sound,</span>',
-          '      <span class="word"><span class="inline-icon" style="color: var(--c-green)"><svg viewBox="0 0 64 64" fill="currentColor"><circle cx="32" cy="32" r="26"/><polygon points="26,20 26,44 46,32" fill="#E8EAEE"/></svg></span> story.</span>',
-          '    </p>',
-          '  </div>',
-          // small "↓ SCROLL" nudge above the marquee
-          '  <div class="scroll-hint"><span class="lbl">SCROLL</span><span class="arrow">&#8595;</span></div>',
-          // black marquee at bottom — items pulled from _CONFIG.hero_marquee_items
-          // (pipe-separated). Track is duplicated for seamless infinite scroll.
-          '  <div class="marquee"><div class="marquee-track">' + marqueeTrackHtml() + '</div></div>',
-          '</section>'
-        ])
-        .concat([
-          '<section class="vision">',
-          '  <h2 class="rise">Why <span class="accent">Dept of Computing &amp; Media</span> at Bath Spa University &middot; RAK Campus?</h2>',
-          '  <div class="body">',
-          '    <p class="rise">' + escapeHtml(cfg.vision_paragraph_1 || '') + '</p>',
-          '    <p class="rise">' + escapeHtml(cfg.vision_paragraph_2 || '') + '</p>',
-          '    <p class="rise">' + escapeHtml(cfg.vision_paragraph_3 || '') + '</p>',
-          '  </div>',
-          '</section>'
-        ])
-        .concat(modulesInCurrent.length ? [
-          '<section class="section">',
-          '  <div class="section-header rise">',
-          '    <h2>Best of <span class="accent-pink">Last Semester</span></h2>',
-          '    <div class="meta">' + escapeHtml(currentSem) + ' · ' + modulesInCurrent.length + ' modules</div>',
-          '  </div>',
-          '  <div class="showcase-grid">',
-              modulesInCurrent.map(function(m) { return showcaseHtml(m); }).join(''),
-          '  </div>',
-          '</section>'
-        ] : [])
-        .concat(allModules.length ? [ allModulesSectionHtml() ] : [])
-        .join('');
-
-      document.getElementById('app').innerHTML = html;
-      observeRise();
-      // (the old hero used a chromatic-field canvas; the new flicker hero is
-      //  pure CSS so nothing to initialise here)
-    }
-
-    // Build the inner HTML for the hero marquee track. Items come from
-    // _CONFIG.hero_marquee_items as a pipe-separated string (e.g.
-    // "Creative Computing | Digital Storytelling | BSU · RAK Campus").
-    // The list is duplicated inline so the CSS animation can translate
-    // the track by -50% without a visible jump at the loop point.
-    function marqueeTrackHtml() {
-      const cfg = (SITE && SITE.config) || {};
-      let items = [];
-      if (cfg.hero_marquee_items && typeof cfg.hero_marquee_items === 'string') {
-        items = cfg.hero_marquee_items.split('|').map(function(s) { return s.trim(); }).filter(Boolean);
-      }
-      if (!items.length) {
-        items = ['Creative Computing', 'Digital Storytelling', 'Game Design',
-                 'UX & Web', 'Emerging Tech', 'BSU · RAK Campus'];
-      }
-      const single = items.map(function(s) {
-        return '<span class="item">' + escapeHtml(s) + ' <span class="star">&#10022;</span></span>';
-      }).join('');
-      return single + single;
-    }
-
-    function showcaseHtml(module) {
-      const color = colorFor(module.tab_name);
-      const block = module.latest_block;
-      const videos = block.videos;
-      const featured = videos[0];
-      // Show exactly 3 mini thumbnails (was 4). Empty slots padded with
-      // null so the row stays aligned with the 3-column filmstrip.
-      const TOTAL_MINIS = 3;
-      const actualRest = videos.slice(1, 1 + TOTAL_MINIS);
-      const rest = actualRest.slice();
-      while (rest.length < TOTAL_MINIS) rest.push(null);
-      const cardId = 'sc-' + module.tab_name.replace(/[^A-Za-z0-9]/g, '_');
-      const featuredCaption = (featured.student || 'Untitled') + ' · ' + module.display_name + ' · ' + (block.semester || '');
-      // SVG paths for the globe link icon, inlined here to avoid an
-      // extra HTTP request. Only rendered when the row's link cell
-      // has a value (link field comes back as '' when empty).
-      const linkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>';
-      const featuredLink = featured.link ? '<a class="link-btn" href="' + escapeAttr(featured.link) + '" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="Visit project">' + linkSvg + '</a>' : '';
-
+    if (post.type === 'text') {
       return [
-        '<div class="showcase rise" style="--c:' + color + '">',
-        '  <div class="featured" id="' + cardId + '-f" onclick="openLightbox(\'' + escapeJs(featured.video_id) + '\',\'' + escapeJs(featuredCaption) + '\')">',
-        '    <span class="featured-tag">№ 01 &middot; <span class="eye">&#9673;</span> ' + formatViews(featured.views) + '</span>',
-        '    ' + featuredLink,
-        '    <img src="' + escapeAttr(featured.thumbnail) + '" alt="" loading="lazy" onerror="this.src=\'https://img.youtube.com/vi/' + escapeJs(featured.video_id) + '/hqdefault.jpg\'">',
-        '    <div class="play-big"></div>',
-        '    <div class="overlay-name">',
-        '      <span class="marker"></span>',
-        '      <span class="name-text">' + escapeHtml(featured.student || 'Untitled') + '</span>',
-        '    </div>',
+        '<div class="post-card text-post" onclick="' + open + '">',
+        '  <div class="text-body">',
+        '    <span class="type-badge-static">READ</span>',
+        '    <div class="h">' + escapeHtml(post.heading) + '</div>',
+        '    <div class="excerpt">' + escapeHtml(post.excerpt) + '</div>',
+        '    <div class="read">READ →</div>',
         '  </div>',
-        '  <div class="module-info">',
-        '    <div class="module-name" onclick="navigateTo(\'module\',\'' + escapeJs(module.tab_name) + '\')">' + escapeHtml(module.display_name) + '</div>',
-        '    <div class="module-meta">',
-        '      <span>' + escapeHtml((block && block.tutor) || module.tutor || '—') + '</span>',
-        '    </div>',
-        '  </div>',
-        '  <div class="filmstrip">',
-            rest.map(function(v) {
-              if (!v) {
-                // empty placeholder — same size as a real mini so the row stays balanced
-                return '<div class="mini empty"><div class="mini-thumb"></div></div>';
-              }
-              const miniCaption = (v.student || 'Untitled') + ' · ' + module.display_name + ' · ' + (block.semester || '');
-              const miniLink = v.link ? '<a class="link-btn" href="' + escapeAttr(v.link) + '" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="Visit project">' + linkSvg + '</a>' : '';
-              return [
-                '<div class="mini" onclick="openLightbox(\'' + escapeJs(v.video_id) + '\',\'' + escapeJs(miniCaption) + '\')">',
-                '  <div class="mini-thumb">',
-                '    <span class="mini-pos-tag">№ ' + (v.position < 10 ? '0' : '') + v.position + ' &middot; <span class="eye">&#9673;</span> ' + formatViews(v.views) + '</span>',
-                '    ' + miniLink,
-                '    <img src="' + escapeAttr(v.thumbnail) + '" alt="" loading="lazy" onerror="this.src=\'https://img.youtube.com/vi/' + escapeJs(v.video_id) + '/hqdefault.jpg\'">',
-                '    <div class="mini-play"></div>',
-                '  </div>',
-                '  <div class="mini-meta">',
-                '    <div class="student-mini">' + escapeHtml(v.student || 'Untitled') + '</div>',
-                '    <span class="student-line"></span>',
-                '  </div>',
-                '</div>'
-              ].join('');
-            }).join(''),
-        '  </div>',
-        '  <div class="view-all" onclick="navigateTo(\'module\',\'' + escapeJs(module.tab_name) + '\')">',
-        '    <span>View all ' + videos.length + ' projects</span>',
-        '    <span class="arrow">→</span>',
+        '  <div class="meta-row">',
+        '    <span class="author">' + escapeHtml(post.author_display) + '</span>',
+        '    <span>' + escapeHtml(post.date_display) + '</span>',
         '  </div>',
         '</div>'
       ].join('');
     }
 
-    function moduleNavHtml(module, idx) {
-      const color = colorFor(module.tab_name);
-      const num = (idx + 1).toString().padStart(2, '0');
-      return [
-        '<div class="module-nav rise" style="--c:' + color + '" onclick="navigateTo(\'module\',\'' + escapeJs(module.tab_name) + '\')">',
-        '  <div class="num">№ ' + num + '</div>',
-        '  <div class="name">' + escapeHtml(module.display_name) + '</div>',
-        '</div>'
-      ].join('');
+    // photo, story, mixed — all use a cover image
+    const badge = post.type === 'photo'
+      ? 'PHOTO' + (post.gallery_count ? ' <span class="count">+' + post.gallery_count + '</span>' : '')
+      : post.type === 'story' ? 'STORY' + (post.gallery_count ? ' <span class="count">+' + post.gallery_count + '</span>' : '')
+      : 'VIDEO';
+    return [
+      '<div class="post-card" onclick="' + open + '">',
+      '  <div class="cover">',
+      '    <span class="type-badge">' + badge + '</span>',
+      '    <img src="' + (post.cover || 'https://picsum.photos/seed/' + post.slug + '/800/450') + '" alt="" loading="lazy">',
+      (post.type === 'video' ? '<div class="play-marker"></div>' : ''),
+      '    <div class="overlay">',
+      '      <div class="h">' + escapeHtml(post.heading) + '</div>',
+      '    </div>',
+      '  </div>',
+      '  <div class="meta-row">',
+      '    <span class="author">' + escapeHtml(post.author_display) + '</span>',
+      '    <span>' + escapeHtml(post.date_display) + '</span>',
+      '  </div>',
+      '</div>'
+    ].join('');
+  }
+
+
+  // =================================================================
+  // MODULE PAGE — semester + brick gallery for one module
+  // =================================================================
+  function renderModule(mod) {
+    if (SITE && SITE.config) updateBrand(SITE.config);
+    if (LOAD_ERROR) {
+      document.getElementById('app').innerHTML = '<div style="padding:120px 60px;text-align:center;font-family:var(--font-display);color:var(--ink-soft)"><div style="font-size:42px;font-weight:900;color:var(--ink);margin-bottom:18px;letter-spacing:-0.02em">Site data could not load.</div><div style="font-size:14px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.1em">' + escapeHtml(LOAD_ERROR) + '</div><div style="margin-top:30px;font-size:11px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.16em;text-transform:uppercase">Check the Apps Script URL in index.html and the sheet permissions.</div></div>';
+      return;
+    }
+    if (!SITE) {
+      document.getElementById('app').innerHTML = '<div style="padding:160px 60px;text-align:center;font-family:var(--font-mono);color:var(--ink-mute);font-size:11px;letter-spacing:0.24em;text-transform:uppercase">Loading…</div>';
+      return;
     }
 
-    // ============ MODULE PAGE ============
-    function renderModule(name) {
-      const m = SITE.modules.find(function(x) { return x.tab_name === name; });
-      if (!m) {
-        document.getElementById('app').innerHTML = '<div class="loading">module not found</div>';
-        return;
+    // Build list of videos in the order: featured, then minis
+    const videos = [mod.featured].concat(mod.minis);
+    document.getElementById('app').innerHTML = [
+      '<div class="module-page">',
+      '  <div class="module-nav-row">',
+      '    <span class="back" onclick="navigateTo(\'home\')">← BACK TO HOME</span>',
+      '    <div>' + escapeHtml(mod.display_name) + ' · ' + escapeHtml(mod.tutor) + '</div>',
+      '  </div>',
+      '  <div class="module-hero">',
+      '    <div class="meta-line">' + cfgEscape(SITE.config.bsc_label || 'MODULE') + '</div>',
+      '    <h1>' + escapeHtml(mod.display_name) + '</h1>',
+      (mod.tagline ? '    <p class="module-tagline">' + escapeHtml(mod.tagline) + '</p>' : ''),
+      '    <div class="module-meta-row"><strong>' + escapeHtml(mod.tutor) + '</strong> · ' + SITE.config.current_semester + ' · ' + videos.length + ' projects</div>',
+      '  </div>',
+      '  <section class="semester-section">',
+      '    <div class="sem-head">',
+      '      <h2>Best of <span class="accent">' + SITE.config.current_semester + '</span> with ' + escapeHtml(mod.tutor) + '</h2>',
+      '      <div class="sem-meta">' + videos.length + ' projects</div>',
+      '    </div>',
+      '    <div class="masonry">',
+      videos.map((v, i) => {
+        return '<div class="masonry-card" style="--c:' + mod.color + '" onclick="openLightbox(\'' + escapeJs(v.student) + ' · ' + escapeJs(mod.display_name) + '\')">'
+          + '<div class="v-thumb">'
+          + '<img src="' + (v.thumb || 'https://picsum.photos/seed/' + i + '/800/450') + '" alt="" loading="lazy">'
+          + '<div class="v-play"></div>'
+          + '</div>'
+          + '<div class="v-name">' + escapeHtml(v.student) + '</div>'
+          + '</div>';
+      }).join(''),
+      '    </div>',
+      '  </section>',
+      '  <footer>',
+      '    ' + escapeHtml(SITE.config.footer_text) + ' <span class="sep">|</span> <span class="contact">' + escapeHtml(SITE.config.footer_contact) + '</span>',
+      '  </footer>',
+      '</div>'
+    ].join('');
+  }
+
+  // =================================================================
+  // ARTICLE PAGE
+  // =================================================================
+  function renderArticle(post) {
+    if (SITE && SITE.config) updateBrand(SITE.config);
+    if (LOAD_ERROR) {
+      document.getElementById('app').innerHTML = '<div style="padding:120px 60px;text-align:center;font-family:var(--font-display);color:var(--ink-soft)"><div style="font-size:42px;font-weight:900;color:var(--ink);margin-bottom:18px;letter-spacing:-0.02em">Site data could not load.</div><div style="font-size:14px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.1em">' + escapeHtml(LOAD_ERROR) + '</div><div style="margin-top:30px;font-size:11px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.16em;text-transform:uppercase">Check the Apps Script URL in index.html and the sheet permissions.</div></div>';
+      return;
+    }
+    if (!SITE) {
+      document.getElementById('app').innerHTML = '<div style="padding:160px 60px;text-align:center;font-family:var(--font-mono);color:var(--ink-mute);font-size:11px;letter-spacing:0.24em;text-transform:uppercase">Loading…</div>';
+      return;
+    }
+
+    const dateFull = new Date(post.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    const readTime = Math.max(1, Math.ceil((post.body || '').split(/\s+/).length / 200));
+    // Park the gallery array on window so the inline onclick can read it
+    if (post.gallery && post.gallery.length) window._currentGallery = post.gallery;
+    const galleryHtml = post.gallery && post.gallery.length
+      ? '<div class="article-gallery">'
+        + '<h3>Gallery</h3>'
+        + '<div class="gallery-grid">'
+        + post.gallery.map((src, i) => '<div class="gi" onclick="openCarousel(window._currentGallery, ' + i + ')"><img src="' + src + '" alt="" loading="lazy"></div>').join('')
+        + '</div></div>'
+      : '';
+
+    document.getElementById('app').innerHTML = [
+      '<div class="article-shell">',
+      '  <div class="article-nav">',
+      '    <span class="back" onclick="navigateTo(\'home\')">← BACK TO ALL POSTS</span>',
+      '    <div>' + escapeHtml(post.meta_line || (post.module + ' · ' + dateFull.toUpperCase())) + '</div>',
+      '  </div>',
+      post.cover
+        ? '<div class="article-cover"><img src="' + post.cover + '" alt=""></div>'
+        : '',
+      '  <div class="article-head">',
+      '    <div class="meta-line">' + escapeHtml(post.meta_line || (post.type.toUpperCase() + ' · ' + post.module)) + '</div>',
+      '    <h1>' + escapeHtml(post.heading) + '</h1>',
+      '    <span class="accent-line"></span>',
+      '    <div class="byline">by <strong>' + escapeHtml(post.author_display) + '</strong> · ' + dateFull + ' · ' + readTime + ' min read</div>',
+      '  </div>',
+      '  <div class="article-body">',
+      '    <div class="body-inner">',
+      renderMarkdown(post.body || ''),
+      '    </div>',
+      '  </div>',
+      galleryHtml,
+      '  <div class="article-foot">',
+      '    <a onclick="navigateTo(\'home\')">← ALL POSTS</a>',
+      '  </div>',
+      '  <footer>',
+      '    ' + escapeHtml(SITE.config.footer_text) + ' <span class="sep">|</span> <span class="contact">' + escapeHtml(SITE.config.footer_contact) + '</span>',
+      '  </footer>',
+      '</div>'
+    ].join('');
+  }
+
+  // =================================================================
+  // MARKDOWN — minimal subset (bold, italic, links, lists, paragraphs)
+  // =================================================================
+  function renderMarkdown(text) {
+    if (!text) return '';
+    const paragraphs = text.split(/\n\n+/);
+    return paragraphs.map(para => {
+      const trimmed = para.trim();
+      if (!trimmed) return '';
+      // Detect a bullet list
+      if (/^- /m.test(trimmed) && trimmed.split('\n').every(line => /^- /.test(line.trim()))) {
+        const items = trimmed.split('\n').map(l => '<li>' + markdownInline(l.replace(/^- /, '').trim()) + '</li>').join('');
+        return '<ul>' + items + '</ul>';
       }
-      const color = colorFor(m.tab_name);
-      const blocks = m.all_blocks || [];
-      const totalProjects = blocks.reduce(function(s,b){return s+b.videos.length;},0);
+      return '<p>' + markdownInline(trimmed.replace(/\n/g, '<br>')) + '</p>';
+    }).join('');
+  }
+  function markdownInline(text) {
+    if (!text) return '';
+    let s = escapeHtml(text);
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    return s;
+  }
 
-      const html = [
-        '<section class="module-hero" style="--c:' + color + '">',
-        '  <div class="breadcrumb"><a onclick="navigateTo(\'home\')">← Home</a>  /  ' + escapeHtml(m.programme || '') + '</div>',
-        '  <h1>' + escapeHtml(m.display_name) + '</h1>',
-        '  <div class="brief">' + escapeHtml(m.brief || '') + '</div>',
-        '</section>',
-        blocks.map(function(b, i) { return semesterSectionHtml(m, b, i, color); }).join(''),
-        allModulesSectionHtml(m.tab_name)
-      ].join('');
+  // =================================================================
+  // LIGHTBOX (simple placeholder for video/image)
+  // =================================================================
+  // Carousel state — used when viewing an article gallery's images
+  let carouselImages = [];
+  let carouselIndex = 0;
 
-      document.getElementById('app').innerHTML = html;
-      observeRise();
+  function openLightbox(caption) {
+    document.getElementById('lightbox').classList.remove('carousel-mode');
+    document.getElementById('lb-host').innerHTML = '▶ Video player placeholder';
+    document.getElementById('lb-caption').textContent = caption || '';
+    document.getElementById('lightbox').classList.add('open');
+  }
+
+  function openCarousel(images, startIndex) {
+    carouselImages = images;
+    carouselIndex = startIndex || 0;
+    const lb = document.getElementById('lightbox');
+    lb.classList.add('carousel-mode');
+    lb.classList.add('open');
+    renderCarouselImage();
+  }
+
+  function renderCarouselImage() {
+    const src = carouselImages[carouselIndex];
+    document.getElementById('lb-host').innerHTML = '<img src="' + src + '" alt="">';
+    document.getElementById('lb-caption').textContent =
+      (carouselIndex + 1) + ' / ' + carouselImages.length;
+  }
+
+  function carouselPrev(e) {
+    if (e) e.stopPropagation();
+    if (!carouselImages.length) return;
+    carouselIndex = (carouselIndex - 1 + carouselImages.length) % carouselImages.length;
+    renderCarouselImage();
+  }
+
+  function carouselNext(e) {
+    if (e) e.stopPropagation();
+    if (!carouselImages.length) return;
+    carouselIndex = (carouselIndex + 1) % carouselImages.length;
+    renderCarouselImage();
+  }
+
+  function closeLightbox(event) {
+    if (event) event.stopPropagation();
+    const lb = document.getElementById('lightbox');
+    lb.classList.remove('open');
+    lb.classList.remove('carousel-mode');
+    document.getElementById('lb-host').innerHTML = '';
+    carouselImages = []; carouselIndex = 0;
+  }
+
+  document.addEventListener('keydown', e => {
+    const lb = document.getElementById('lightbox');
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowLeft' && lb.classList.contains('carousel-mode')) carouselPrev();
+    else if (e.key === 'ArrowRight' && lb.classList.contains('carousel-mode')) carouselNext();
+  });
+
+  // =================================================================
+  // ESCAPE HELPERS
+  // =================================================================
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+      ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])
+    );
+  }
+  function escapeAttr(s) {
+    return escapeHtml(String(s == null ? '' : s).replace(/[\r\n\t]+/g, ' ').trim());
+  }
+  function escapeJs(s) {
+    return String(s == null ? '' : s)
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'")
+      .replace(/"/g, '\\"')
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      .replace(/\t/g, '\\t');
+  }
+
+  // Scroll-top fab visibility — show after 50% of viewport scrolled
+  (function setupScrollTopFab() {
+    const fab = document.getElementById('scroll-top-fab');
+    if (!fab) return;
+    function update() {
+      const halfway = window.innerHeight * 0.5;
+      if (window.scrollY > halfway) fab.classList.add('visible');
+      else fab.classList.remove('visible');
     }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
 
-    // Render the "All Modules" grid as a standalone section. Optional
-    // excludeTabName argument hides the currently-viewed module from
-    // the grid (used on module pages so the visitor only sees OTHER
-    // modules to explore — on the home page the parameter is omitted
-    // so all modules show).
-    function allModulesSectionHtml(excludeTabName) {
-      const list = SITE.modules.filter(function(m) {
-        return m.latest_block && m.latest_block.videos.length && m.tab_name !== excludeTabName;
-      });
-      if (!list.length) return '';
-      const headerLabel = excludeTabName ? 'Explore Other <span class="accent-cyan">Modules</span>' : 'All <span class="accent-cyan">Modules</span>';
-      const metaLabel = excludeTabName
-        ? list.length + ' other module' + (list.length === 1 ? '' : 's') + ' · pick one to explore'
-        : list.length + ' modules · pick one to explore';
-      return [
-        '<section class="section">',
-        '  <div class="section-header rise">',
-        '    <h2>' + headerLabel + '</h2>',
-        '    <div class="meta">' + metaLabel + '</div>',
-        '  </div>',
-        '  <div class="module-nav-grid">',
-            list.map(function(m, i) { return moduleNavHtml(m, i); }).join(''),
-        '  </div>',
-        '</section>'
-      ].join('');
-    }
+  // Boot — fetch sheet data then render
+  loadSiteData();
+</script>
 
-    // Size pattern: each "cluster" is one hero (4 cols wide) + two stacked
-    // smalls (2 cols × 2 rows) -> fills the 6 cols with NO gaps. After
-    // that, additional videos lay out in rows of three smalls each.
-    // Leftovers (1 or 2 trailing videos) become size-wide or size-small pair.
-    function assignSizes(count) {
-      const sizes = [];
-      if (count === 0) return sizes;
-      let i = 0;
-
-      // first cluster: hero + 2 smalls if we have at least 3 videos
-      if (count >= 3) {
-        sizes[i++] = 'size-hero';
-        sizes[i++] = 'size-small';
-        sizes[i++] = 'size-small';
-      } else if (count === 2) {
-        // two videos -> hero + one small (small sits beside top half of hero,
-        // small gap below — acceptable for this rare case)
-        sizes[i++] = 'size-hero';
-        sizes[i++] = 'size-small';
-      } else {
-        sizes[i++] = 'size-hero';
-      }
-
-      // remaining videos: rows of three smalls
-      while (i < count) {
-        const remaining = count - i;
-        if (remaining === 1) { sizes[i++] = 'size-wide'; }
-        else if (remaining === 2) { sizes[i++] = 'size-medium'; sizes[i++] = 'size-medium'; }
-        else { sizes[i++] = 'size-small'; sizes[i++] = 'size-small'; sizes[i++] = 'size-small'; }
-      }
-      return sizes.slice(0, count);
-    }
-
-    // tile colors — deep enough to read on white,
-    // used for the play button outline, position tag, and the ribbon.
-    const PASTELS = [
-      "#E8527E",  // rose
-      "#7C5CD6",  // violet
-      "#D69A1E",  // amber
-      "#2E8BB0",  // ocean blue
-      "#C2487E",  // berry
-      "#3FA06A",  // green
-      "#C26A3E",  // terracotta
-      "#5566C4"   // indigo
-    ];
-    function pastelFor(idx) { return PASTELS[idx % PASTELS.length]; }
-
-    function semesterSectionHtml(module, block, idx, color) {
-      const sizes = assignSizes(block.videos.length);
-      const cards = block.videos.map(function(v, vi) {
-        const cardId = 'mv-' + module.tab_name.replace(/[^A-Za-z0-9]/g, '_') + '-' + v.video_id + '-' + v.position;
-        const size = sizes[vi] || 'size-small';
-        const tile = pastelFor(vi);
-        const studentName = v.student || 'Untitled';
-        // build a caption for the lightbox: "Student · Module · Semester"
-        const captionParts = [studentName, module.display_name, block.semester || ''].filter(Boolean);
-        const caption = captionParts.join(' · ');
-        // Globe link icon — rendered only when the row has a link in the sheet.
-        // stopPropagation prevents the lightbox from opening alongside the link.
-        const linkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>';
-        const linkBtn = v.link ? '<a class="link-btn" href="' + escapeAttr(v.link) + '" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="Visit project">' + linkSvg + '</a>' : '';
-        return [
-          '<div class="masonry-card rise ' + size + '" style="--c:' + color + ';--tile:' + tile + '" id="' + cardId + '">',
-          '  <div class="v-thumb" onclick="openLightbox(\'' + escapeJs(v.video_id) + '\',\'' + escapeJs(caption) + '\')">',
-          '    <span class="pos-tag">№ ' + (v.position < 10 ? '0' : '') + v.position + ' &middot; <span class="eye">&#9673;</span> ' + formatViews(v.views) + '</span>',
-          '    ' + linkBtn,
-          '    <img src="' + escapeAttr(v.thumbnail) + '" alt="" loading="lazy" onerror="this.src=\'https://img.youtube.com/vi/' + escapeJs(v.video_id) + '/hqdefault.jpg\'">',
-          '    <div class="v-play"></div>',
-          '  </div>',
-          '  <div class="v-name">' + escapeHtml(studentName) + '</div>',
-          '</div>'
-        ].join('');
-      }).join('');
-      const muted = idx > 0 ? ' muted' : '';
-      const blockTutor = block.tutor || module.tutor || '';
-      return [
-        '<section class="semester-section' + muted + '" style="--c:' + color + '">',
-        '  <div class="sem-head rise">',
-        '    <h3><span class="accent">' + escapeHtml(block.semester || '') + '</span> &nbsp; — &nbsp; with ' + escapeHtml(blockTutor) + '</h3>',
-        '    <span class="sem-meta">' + block.videos.length + ' project' + (block.videos.length === 1 ? '' : 's') + '</span>',
-        '  </div>',
-        '  <div class="masonry">' + cards + '</div>',
-        '</section>'
-      ].join('');
-    }
-
-    // ============ LIGHTBOX (YouTube IFrame API + ambient ducking) ============
-    //
-    // Videos open MUTED so browsers allow autoplay. When the user clicks
-    // the unmute button on the YouTube player, we detect the change by
-    // polling player.isMuted() and fade the ambient music out smoothly.
-    // When they re-mute, end the video, or close the lightbox, the
-    // ambient music fades back in.
-    //
-    // The YouTube IFrame API requires loading https://www.youtube.com/iframe_api
-    // and waiting for window.onYouTubeIframeAPIReady. We load it lazily on the
-    // first openLightbox call.
-    let ytPlayer = null;
-    let ytApiReady = false;
-    let ytApiPending = null;
-    let ytMutePollInterval = null;
-    let ytLastMutedState = true;
-    let ambientFadeInterval = null;
-    let ambientPreFadeVolume = 1.0;
-
-    // Receive callback from the IFrame API once it's loaded
-    window.onYouTubeIframeAPIReady = function() {
-      ytApiReady = true;
-      if (ytApiPending) {
-        const fn = ytApiPending;
-        ytApiPending = null;
-        fn();
-      }
-    };
-
-    function loadYouTubeApi() {
-      if (ytApiReady || document.getElementById('yt-iframe-api-script')) return;
-      const tag = document.createElement('script');
-      tag.id = 'yt-iframe-api-script';
-      tag.src = 'https://www.youtube.com/iframe_api';
-      document.head.appendChild(tag);
-    }
-
-    function openLightbox(videoId, caption) {
-      const lb = document.getElementById('lightbox');
-      const host = document.getElementById('lb-iframe-host');
-      const cap  = document.getElementById('lb-caption');
-      if (!lb || !host) return;
-
-      // Fire-and-forget — increment view count in the backend. We
-      // deliberately don't await this, the lightbox should open
-      // instantly regardless of whether the POST succeeds. The new
-      // count will appear on the next page-load after the cache expires.
-      incrementView(videoId);
-
-      // Tear down any previous player
-      stopMutePolling();
-      if (ytPlayer) {
-        try { ytPlayer.destroy(); } catch (err) {}
-        ytPlayer = null;
-      }
-      ytLastMutedState = true;
-
-      // Fresh div as the YT player target
-      host.innerHTML = '<div id="yt-player"></div>';
-      if (cap) cap.textContent = caption || '';
-      lb.classList.add('open');
-      document.body.style.overflow = 'hidden';
-
-      const createPlayer = function() {
-        ytPlayer = new YT.Player('yt-player', {
-          videoId: videoId,
-          playerVars: {
-            autoplay: 1,
-            mute: 1,          // muted by default so autoplay works
-            rel: 0,
-            modestbranding: 1,
-            playsinline: 1
-          },
-          events: {
-            onReady: function() {
-              ytLastMutedState = true;
-              startMutePolling();
-            },
-            onStateChange: function(e) {
-              // YT.PlayerState.ENDED === 0
-              if (e.data === 0) {
-                fadeAmbientIn();
-              }
-            }
-          }
-        });
-      };
-
-      if (ytApiReady && window.YT && window.YT.Player) {
-        createPlayer();
-      } else {
-        ytApiPending = createPlayer;
-        loadYouTubeApi();
-      }
-    }
-
-    function closeLightbox(evt) {
-      if (evt && evt.stopPropagation) evt.stopPropagation();
-      const lb = document.getElementById('lightbox');
-      const host = document.getElementById('lb-iframe-host');
-      if (!lb) return;
-      lb.classList.remove('open');
-      stopMutePolling();
-      if (ytPlayer) {
-        try { ytPlayer.destroy(); } catch (err) {}
-        ytPlayer = null;
-      }
-      if (host) host.innerHTML = '';
-      document.body.style.overflow = '';
-      ytLastMutedState = true;
-      fadeAmbientIn();   // bring ambient back up if it was ducked
-    }
-
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') closeLightbox();
-    });
-
-    function startMutePolling() {
-      stopMutePolling();
-      ytMutePollInterval = setInterval(function() {
-        if (!ytPlayer || typeof ytPlayer.isMuted !== 'function') return;
-        let isMuted;
-        try { isMuted = ytPlayer.isMuted(); } catch (err) { return; }
-        if (isMuted === ytLastMutedState) return;
-        ytLastMutedState = isMuted;
-        if (isMuted) {
-          fadeAmbientIn();    // video re-muted → bring ambient back
-        } else {
-          fadeAmbientOut();   // video unmuted → duck ambient
-        }
-      }, 400);
-    }
-    function stopMutePolling() {
-      if (ytMutePollInterval) { clearInterval(ytMutePollInterval); ytMutePollInterval = null; }
-    }
-
-    // === Ambient volume fade (600ms) ===
-    function fadeAmbientOut() {
-      if (!audioEl) return;
-      if (audioEl.paused) return;     // not playing, nothing to duck
-      if (ambientFadeInterval) clearInterval(ambientFadeInterval);
-      ambientPreFadeVolume = (audioEl.volume > 0) ? audioEl.volume : 1.0;
-      const steps = 24;
-      const stepMs = 600 / steps;
-      const decrement = audioEl.volume / steps;
-      ambientFadeInterval = setInterval(function() {
-        const next = audioEl.volume - decrement;
-        if (next <= 0.01) {
-          audioEl.volume = 0;
-          clearInterval(ambientFadeInterval);
-          ambientFadeInterval = null;
-        } else {
-          audioEl.volume = next;
-        }
-      }, stepMs);
-    }
-    function fadeAmbientIn() {
-      if (!audioEl) return;
-      if (audioEl.paused) return;     // user has the music off; don't force it on
-      if (ambientFadeInterval) clearInterval(ambientFadeInterval);
-      const target = (ambientPreFadeVolume > 0) ? ambientPreFadeVolume : 1.0;
-      const steps = 24;
-      const stepMs = 600 / steps;
-      const increment = (target - audioEl.volume) / steps;
-      if (increment <= 0) { audioEl.volume = target; return; }
-      ambientFadeInterval = setInterval(function() {
-        const next = audioEl.volume + increment;
-        if (next >= target) {
-          audioEl.volume = target;
-          clearInterval(ambientFadeInterval);
-          ambientFadeInterval = null;
-        } else {
-          audioEl.volume = next;
-        }
-      }, stepMs);
-    }
-
-    function escapeHtml(s) {
-      return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
-        return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c];
-      });
-    }
-    function escapeAttr(s) {
-      // Also strip newlines/tabs from attribute values — invisible
-      // characters in sheet cells (from Alt+Enter or paste) corrupt
-      // href and onclick attributes silently.
-      return escapeHtml(String(s == null ? '' : s).replace(/[\r\n\t]+/g, ' ').trim());
-    }
-    function escapeJs(s) {
-      // Order matters: backslash first, then quotes, then control chars.
-      // Without escaping newlines, a student name containing a line
-      // break would syntax-error the surrounding onclick attribute and
-      // the click handler would never bind.
-      return String(s == null ? '' : s)
-        .replace(/\\/g, '\\\\')
-        .replace(/'/g, "\\'")
-        .replace(/"/g, '\\"')
-        .replace(/\n/g, '\\n')
-        .replace(/\r/g, '\\r')
-        .replace(/\t/g, '\\t');
-    }
-
-    // =================================================================
-    // AMBIENT MUSIC — internet radio stream, play/stop toggle
-    // =================================================================
-    // The audio element sits OUTSIDE #app so it survives every renderHome
-    // / renderModule call (which rewrites #app.innerHTML). The user can
-    // start it on the homepage and it keeps playing as they browse
-    // into module pages and back.
-    //
-    // Browsers require a user gesture before they'll start audio with
-    // sound, which is why this is a button rather than autoplay.
-    // =================================================================
-    const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6,4 20,12 6,20" fill="currentColor" stroke="none"/></svg>';
-    const ICON_STOP = '<svg viewBox="0 0 24 24" fill="currentColor"><rect class="bar bar1" x="3"  y="9"  width="3" height="6"/><rect class="bar bar2" x="8"  y="4"  width="3" height="16"/><rect class="bar bar3" x="13" y="7"  width="3" height="10"/><rect class="bar bar4" x="18" y="10" width="3" height="4"/></svg>';
-    const ICON_LOAD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9" stroke-dasharray="14 8"/></svg>';
-
-    const audioEl = document.getElementById('ambient-audio');
-    const musicBtn = document.getElementById('music-toggle');
-    const musicIcon = document.getElementById('music-icon');
-    let musicPlaying = false;
-    let musicLoading = false;
-
-    function musicCfg() {
-      const c = (SITE && SITE.config) ? SITE.config : {};
-      return {
-        url:   c.homepage_music_url   || 'https://ice1.somafm.com/beatblender-128-mp3',
-        label: c.homepage_music_label || 'SomaFM · Beat Blender'
-      };
-    }
-    function setMusicSrcIfNeeded() {
-      const cfg = musicCfg();
-      if (!audioEl.src) audioEl.src = cfg.url;
-    }
-    function updateMusicUI() {
-      if (musicLoading) {
-        musicIcon.innerHTML = ICON_LOAD;
-        musicBtn.classList.remove('playing');
-        musicBtn.classList.add('loading');
-      } else if (musicPlaying) {
-        musicIcon.innerHTML = ICON_STOP;
-        musicBtn.classList.add('playing');
-        musicBtn.classList.remove('loading');
-        musicBtn.setAttribute('aria-label', 'Stop ambient music');
-      } else {
-        musicIcon.innerHTML = ICON_PLAY;
-        musicBtn.classList.remove('playing', 'loading');
-        musicBtn.setAttribute('aria-label', 'Play ambient music');
-      }
-    }
-    musicBtn.addEventListener('click', function() {
-      if (musicPlaying) {
-        audioEl.pause();
-        musicPlaying = false;
-        updateMusicUI();
-        return;
-      }
-      setMusicSrcIfNeeded();
-      musicLoading = true;
-      updateMusicUI();
-      const p = audioEl.play();
-      if (p && p.then) {
-        p.then(function() {
-          musicLoading = false;
-          musicPlaying = true;
-          updateMusicUI();
-        }).catch(function(err) {
-          console.warn('audio play blocked or failed:', err);
-          musicLoading = false;
-          musicPlaying = false;
-          updateMusicUI();
-        });
-      } else {
-        musicLoading = false;
-        musicPlaying = true;
-        updateMusicUI();
-      }
-    });
-    audioEl.addEventListener('pause', function() { musicPlaying = false; updateMusicUI(); });
-    audioEl.addEventListener('ended', function() { musicPlaying = false; updateMusicUI(); });
-    audioEl.addEventListener('error', function() {
-      console.warn('audio error');
-      musicLoading = false;
-      musicPlaying = false;
-      updateMusicUI();
-    });
-    updateMusicUI();
-
-    // =================================================================
-    // SCROLL TO TOP — fade-in button at bottom-right
-    // =================================================================
-    const scrollTopBtn = document.getElementById('scroll-top');
-    function updateScrollTopVisibility() {
-      if (window.scrollY > 400) {
-        scrollTopBtn.classList.add('visible');
-      } else {
-        scrollTopBtn.classList.remove('visible');
-      }
-    }
-    window.addEventListener('scroll', updateScrollTopVisibility, { passive: true });
-    scrollTopBtn.addEventListener('click', function() {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-    updateScrollTopVisibility();
-
-    // =================================================================
-    // HERO PARALLAX — STUDS × headline
-    // =================================================================
-    // As the user scrolls down through the hero, the giant STUDS
-    // ghost word and the "Dept of Computing & Media" headline move
-    // at different rates so they visually separate:
-    //
-    //   STUDS    drifts up at 0.3× scroll  → lingers, reads as "deep"
-    //   Headline lifts off at 1.2× scroll → exits viewport first
-    //
-    // Eyebrow, orbs, floating icons, and marquee scroll naturally
-    // with the hero (no transform applied to them). Throttled via
-    // requestAnimationFrame so scroll stays at 60fps. Respects the
-    // user's prefers-reduced-motion preference.
-    //
-    // The DOM is re-queried inside update() because the hero only
-    // exists when home is rendered — on module pages the queries
-    // return null and the function does nothing. Works cleanly with
-    // SPA route changes.
-    // =================================================================
-    (function setupHeroParallax() {
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (reduceMotion) return;
-
-      const STUDS_RATE    = 0.3;
-      const HEADLINE_RATE = 1.2;
-
-      let ticking = false;
-      function update() {
-        const ghost    = document.querySelector('.hero .ghost-word');
-        const headline = document.querySelector('.hero .headline-wrap');
-        if (ghost && headline) {
-          const y = window.scrollY;
-          ghost.style.transform    = 'translate(-50%, calc(-50% + ' + (-y * STUDS_RATE) + 'px))';
-          headline.style.transform = 'translateY(' + (-y * HEADLINE_RATE) + 'px)';
-        }
-        ticking = false;
-      }
-      window.addEventListener('scroll', function() {
-        if (!ticking) {
-          window.requestAnimationFrame(update);
-          ticking = true;
-        }
-      }, { passive: true });
-    })();
-
-    // =================================================================
-    // RISE-ON-SCROLL OBSERVER
-    // =================================================================
-    // A single shared IntersectionObserver watches every .rise element
-    // currently in the DOM. When one crosses 12% into the viewport (or
-    // when 60px before its bottom edge enters), it gets .in-view which
-    // unlocks the CSS transition. Each element is unobserved after its
-    // first trigger so scrolling back up doesn't re-animate — the rise
-    // is a one-time arrival, not a yo-yo.
-    //
-    // observeRise() is called after every renderHome / renderModule so
-    // newly-rendered elements get picked up when routes change. Already
-    // animated elements (.in-view) are skipped automatically.
-    // =================================================================
-    let riseObserver = null;
-    function getRiseObserver() {
-      if (riseObserver) return riseObserver;
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (reduceMotion) return null;
-      riseObserver = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-          if (!entry.isIntersecting) return;
-          // When ANY .rise enters the viewport, trigger every sibling
-          // .rise inside the same parent at the same moment. The CSS
-          // animation-delay (set per nth-child) then cascades them in
-          // strict DOM order: 1 → 2 → 3 → 4... If each card was
-          // observed individually, row-2 cards would trigger at their
-          // own viewport-entry times and the cascade would look random.
-          const parent = entry.target.parentElement;
-          if (parent) {
-            parent.querySelectorAll(':scope > .rise:not(.in-view)').forEach(function(sib) {
-              sib.classList.add('in-view');
-              riseObserver.unobserve(sib);
-            });
-          } else {
-            entry.target.classList.add('in-view');
-            riseObserver.unobserve(entry.target);
-          }
-        });
-      }, {
-        threshold: 0.25,
-        rootMargin: '0px'
-      });
-      return riseObserver;
-    }
-    function observeRise() {
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const nodes = document.querySelectorAll('.rise:not(.in-view)');
-      if (reduceMotion) {
-        nodes.forEach(function(el) { el.classList.add('in-view'); });
-        return;
-      }
-      const obs = getRiseObserver();
-      if (!obs) return;
-      nodes.forEach(function(el) { obs.observe(el); });
-    }
-
-    load();
-  </script>
 </body>
 </html>
