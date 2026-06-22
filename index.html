@@ -983,15 +983,16 @@
   // MOCK DATA — modules with videos, posts with mixed types,
   // one full article for previewing the article page
   // =================================================================
-  // SITE data is loaded from Google Apps Script at boot.
-  // Replace APPS_SCRIPT_URL with your /exec deployment URL.
+  // ============================================================
+  // SITE data loader — paste your Apps Script /exec URL below.
+  // ============================================================
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyjBG-LPU5Ve3XeUIQfAcPARlKXHMkDBBc_p-z7kTuhMb421Qx73k96txl-hzkk8nPc/exec';
   let SITE = null;
   let LOAD_ERROR = null;
 
   async function loadSiteData() {
     if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PASTE') === 0) {
-      LOAD_ERROR = 'Apps Script URL not configured.';
+      LOAD_ERROR = 'Apps Script URL not set in index.html.';
       renderRoute();
       return;
     }
@@ -1346,7 +1347,9 @@
       '      <div class="sem-meta">' + videos.length + ' projects</div>',
       '    </div>',
       '    <div class="masonry">',
-      videos.map((v, i) => {
+      (videos.length === 0
+        ? '<div style="padding:60px 0;color:var(--ink-mute);font-family:var(--font-mono);font-size:11px;letter-spacing:0.22em;text-transform:uppercase">No projects in this module tab yet.</div>'
+        : videos.map((v, i) => {
         return '<div class="masonry-card" style="--c:' + mod.color + '" onclick="openLightbox(\'' + escapeJs(v.youtube || '') + '\',\'' + escapeJs(v.student) + ' · ' + escapeJs(mod.display_name) + '\')">'
           + '<div class="v-thumb">'
           + '<img src="' + (v.thumb || 'https://picsum.photos/seed/' + i + '/800/450') + '" alt="" loading="lazy">'
@@ -1354,7 +1357,7 @@
           + '</div>'
           + '<div class="v-name">' + escapeHtml(v.student) + '</div>'
           + '</div>';
-      }).join(''),
+      }).join('')),
       '    </div>',
       '  </section>',
       '  <footer>',
