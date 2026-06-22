@@ -989,6 +989,7 @@
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyjBG-LPU5Ve3XeUIQfAcPARlKXHMkDBBc_p-z7kTuhMb421Qx73k96txl-hzkk8nPc/exec';
   let SITE = null;
   let LOAD_ERROR = null;
+  let LOAD_ERROR_WHERE = null;
 
   async function loadSiteData() {
     if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PASTE') === 0) {
@@ -1000,7 +1001,7 @@
       const res = await fetch(APPS_SCRIPT_URL, { method: 'GET' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      if (data.error) { LOAD_ERROR_WHERE = data.where || null; throw new Error(data.error); }
       SITE = data;
       renderRoute();
     } catch (err) {
@@ -1113,7 +1114,7 @@
   // =================================================================
   function renderHome() {
     if (LOAD_ERROR) {
-      document.getElementById('app').innerHTML = '<div style="padding:120px 60px;text-align:center;font-family:var(--font-display);color:var(--ink-soft)"><div style="font-size:42px;font-weight:900;color:var(--ink);margin-bottom:18px;letter-spacing:-0.02em">Site data could not load.</div><div style="font-size:14px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.1em">' + escapeHtml(LOAD_ERROR) + '</div><div style="margin-top:30px;font-size:11px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.16em;text-transform:uppercase">Check the Apps Script URL in index.html and the sheet permissions.</div></div>';
+      document.getElementById('app').innerHTML = '<div style="padding:120px 60px;text-align:center;font-family:var(--font-display);color:var(--ink-soft)"><div style="font-size:42px;font-weight:900;color:var(--ink);margin-bottom:18px;letter-spacing:-0.02em">Site data could not load.</div><div style="font-size:14px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.1em">' + escapeHtml(LOAD_ERROR) + '</div>' + (LOAD_ERROR_WHERE ? '<div style="margin-top:14px;font-size:11px;font-family:var(--font-mono);color:var(--ink-faint);letter-spacing:0.1em;max-width:900px;margin-left:auto;margin-right:auto;word-break:break-all">' + escapeHtml(LOAD_ERROR_WHERE) + '</div>' : '') + '<div style="margin-top:30px;font-size:11px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.16em;text-transform:uppercase">Check the Apps Script URL in index.html and the sheet permissions.</div></div>';
       return;
     }
     if (!SITE) {
@@ -1235,6 +1236,18 @@
   // SHOWCASE CARD — video module showcase. NO pos-tag, NO views.
   // =================================================================
   function showcaseHtml(module) {
+    // If a module has no videos at all yet, render a minimal empty card
+    if (!module || !module.featured) {
+      return [
+        '<div class="showcase" style="--c:' + (module && module.color || 'var(--accent)') + '">',
+        '  <div class="featured" style="display:flex;align-items:center;justify-content:center;background:var(--bg-soft);color:var(--ink-mute);font-family:var(--font-mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase">No videos yet</div>',
+        '  <div class="mod" onclick="navigateTo(\'module\',\'' + escapeJs((module && module.tab_name) || '') + '\')">',
+        '    <div class="mname">' + escapeHtml((module && module.display_name) || '') + '</div>',
+        '    <div class="tutor">' + escapeHtml((module && module.tutor) || '') + '</div>',
+        '  </div>',
+        '</div>'
+      ].join('');
+    }
     const linkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>';
     const featLink = module.featured.link
       ? '<a class="link-btn" href="' + escapeAttr(module.featured.link) + '" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="Visit project">' + linkSvg + '</a>'
@@ -1319,7 +1332,7 @@
   function renderModule(mod) {
     if (SITE && SITE.config) updateBrand(SITE.config);
     if (LOAD_ERROR) {
-      document.getElementById('app').innerHTML = '<div style="padding:120px 60px;text-align:center;font-family:var(--font-display);color:var(--ink-soft)"><div style="font-size:42px;font-weight:900;color:var(--ink);margin-bottom:18px;letter-spacing:-0.02em">Site data could not load.</div><div style="font-size:14px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.1em">' + escapeHtml(LOAD_ERROR) + '</div><div style="margin-top:30px;font-size:11px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.16em;text-transform:uppercase">Check the Apps Script URL in index.html and the sheet permissions.</div></div>';
+      document.getElementById('app').innerHTML = '<div style="padding:120px 60px;text-align:center;font-family:var(--font-display);color:var(--ink-soft)"><div style="font-size:42px;font-weight:900;color:var(--ink);margin-bottom:18px;letter-spacing:-0.02em">Site data could not load.</div><div style="font-size:14px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.1em">' + escapeHtml(LOAD_ERROR) + '</div>' + (LOAD_ERROR_WHERE ? '<div style="margin-top:14px;font-size:11px;font-family:var(--font-mono);color:var(--ink-faint);letter-spacing:0.1em;max-width:900px;margin-left:auto;margin-right:auto;word-break:break-all">' + escapeHtml(LOAD_ERROR_WHERE) + '</div>' : '') + '<div style="margin-top:30px;font-size:11px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.16em;text-transform:uppercase">Check the Apps Script URL in index.html and the sheet permissions.</div></div>';
       return;
     }
     if (!SITE) {
@@ -1373,7 +1386,7 @@
   function renderArticle(post) {
     if (SITE && SITE.config) updateBrand(SITE.config);
     if (LOAD_ERROR) {
-      document.getElementById('app').innerHTML = '<div style="padding:120px 60px;text-align:center;font-family:var(--font-display);color:var(--ink-soft)"><div style="font-size:42px;font-weight:900;color:var(--ink);margin-bottom:18px;letter-spacing:-0.02em">Site data could not load.</div><div style="font-size:14px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.1em">' + escapeHtml(LOAD_ERROR) + '</div><div style="margin-top:30px;font-size:11px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.16em;text-transform:uppercase">Check the Apps Script URL in index.html and the sheet permissions.</div></div>';
+      document.getElementById('app').innerHTML = '<div style="padding:120px 60px;text-align:center;font-family:var(--font-display);color:var(--ink-soft)"><div style="font-size:42px;font-weight:900;color:var(--ink);margin-bottom:18px;letter-spacing:-0.02em">Site data could not load.</div><div style="font-size:14px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.1em">' + escapeHtml(LOAD_ERROR) + '</div>' + (LOAD_ERROR_WHERE ? '<div style="margin-top:14px;font-size:11px;font-family:var(--font-mono);color:var(--ink-faint);letter-spacing:0.1em;max-width:900px;margin-left:auto;margin-right:auto;word-break:break-all">' + escapeHtml(LOAD_ERROR_WHERE) + '</div>' : '') + '<div style="margin-top:30px;font-size:11px;font-family:var(--font-mono);color:var(--ink-mute);letter-spacing:0.16em;text-transform:uppercase">Check the Apps Script URL in index.html and the sheet permissions.</div></div>';
       return;
     }
     if (!SITE) {
