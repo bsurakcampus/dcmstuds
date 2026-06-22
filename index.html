@@ -1005,7 +1005,7 @@
   // ============================================================
   // SITE data loader — paste your Apps Script /exec URL below.
   // ============================================================
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKV1Dm2EFzZrfdHPh-Fn3DsgrcLfrJKAXKq1LzyOb6AtpavbXvp1KgtT6vR969QBdO/exec';
+  const APPS_SCRIPT_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
   let SITE = null;
   let LOAD_ERROR = null;
   let LOAD_ERROR_WHERE = null;
@@ -1303,7 +1303,7 @@
       }).join(''),
       Array(Math.max(0, 3 - module.minis.length)).fill('<div class="mini-card empty"><div class="mini"></div><div class="mini-name">·</div></div>').join(''),
       '  </div>',
-      '  <div class="view-all" onclick="navigateTo(\'module\',\'' + escapeJs(module.tab_name) + '\')"><span>View all ' + (module.minis.length + 1) + ' projects</span><span>→</span></div>',
+      '  <div class="view-all" onclick="navigateTo(\'module\',\'' + escapeJs(module.tab_name) + '\')"><span>View all ' + (module.total_projects || (module.minis.length + 1)) + ' projects</span><span>→</span></div>',
       '</div>'
     ].join('');
   }
@@ -1386,7 +1386,7 @@
       '    <div>' + escapeHtml(mod.display_name) + ' · ' + escapeHtml(mod.tutor) + '</div>',
       '  </div>',
       '  <div class="module-hero">',
-      '    <div class="meta-line">' + cfgEscape(SITE.config.bsc_label || 'MODULE') + '</div>',
+      '    <div class="meta-line">' + cfgEscape('Module · ' + (mod.program || '')) + '</div>',
       '    <h1>' + escapeHtml(mod.display_name) + '</h1>',
       (mod.tagline ? '    <p class="module-tagline">' + escapeHtml(mod.tagline) + '</p>' : ''),
       '    <div class="module-meta-row"><strong>' + escapeHtml(mod.tutor) + '</strong> · ' + SITE.config.current_semester + ' · ' + videos.length + ' projects</div>',
