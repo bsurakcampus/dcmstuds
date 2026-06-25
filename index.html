@@ -543,6 +543,192 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 18px;
   }
+  /* Our Team / Our Students sections */
+  .team-section {
+    padding: 100px 60px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  .team-section.students-section {
+    background: var(--bg-soft);
+  }
+  .team-section .section-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 60px;
+  }
+  .team-section h2 {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(34px, 4.4vw, 64px);
+    letter-spacing: -0.022em; line-height: 1;
+    margin: 0; color: var(--ink);
+  }
+  .team-section h2 .accent { color: var(--accent); }
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 32px 24px;
+  }
+  .team-card {
+    display: flex; flex-direction: column;
+    align-items: flex-start;
+  }
+  .team-photo {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--bg-soft);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .team-photo img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .team-name {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 15px; letter-spacing: -0.01em;
+    color: var(--ink); margin: 0 0 4px;
+    line-height: 1.25;
+  }
+  .team-role {
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 0.16em;
+    color: var(--accent); text-transform: uppercase;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+  .team-bio {
+    font-family: var(--font-display);
+    font-size: 12.5px; line-height: 1.55;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+  @media (max-width: 1300px) {
+    .team-grid { grid-template-columns: repeat(4, 1fr); gap: 30px 22px; }
+  }
+  @media (max-width: 1000px) {
+    .team-grid { grid-template-columns: repeat(3, 1fr); gap: 28px 22px; }
+  }
+  @media (max-width: 700px) {
+    .team-section { padding: 60px 22px; }
+    .team-section .section-header { margin-bottom: 40px; }
+    .team-grid { grid-template-columns: repeat(2, 1fr); gap: 24px 18px; }
+  }
+  @media (max-width: 460px) {
+    .team-grid { grid-template-columns: 1fr; gap: 30px; }
+    .team-photo { width: 50%; max-width: 180px; align-self: center; }
+    .team-card { align-items: center; text-align: center; }
+  }
+
+  /* All Modules — programme groups */
+  .pg-block {
+    margin-bottom: 28px;
+  }
+  .pg-block:last-child { margin-bottom: 0; }
+  .pg-bar {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 12px 8px 10px;
+    border-bottom: 0.5px solid var(--line);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+    margin-bottom: 16px;
+  }
+  .pg-bar:hover { background: var(--bg-soft); }
+  .pg-bar-left {
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  .pg-chev {
+    display: inline-block;
+    font-size: 14px;
+    color: var(--ink-mute);
+    transition: transform 0.25s ease;
+    width: 12px;
+    text-align: center;
+  }
+  .pg-collapsed .pg-chev { transform: rotate(-90deg); }
+  .pg-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+  }
+  .pg-count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+  }
+  .pg-grid {
+    overflow: hidden;
+    max-height: 8000px;
+    opacity: 1;
+    transition: max-height 0.35s ease, opacity 0.2s ease, margin-top 0.3s ease;
+  }
+  .pg-collapsed .pg-grid {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  /* All Modules — programme groups */
+  .pg-block {
+    margin-bottom: 28px;
+  }
+  .pg-block:last-child { margin-bottom: 0; }
+  .pg-bar {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 12px 8px 10px;
+    border-bottom: 0.5px solid var(--line);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+    margin-bottom: 16px;
+  }
+  .pg-bar:hover { background: var(--bg-soft); }
+  .pg-bar-left {
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  .pg-chev {
+    display: inline-block;
+    font-size: 14px;
+    color: var(--ink-mute);
+    transition: transform 0.25s ease;
+    width: 12px;
+    text-align: center;
+  }
+  .pg-collapsed .pg-chev { transform: rotate(-90deg); }
+  .pg-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+  }
+  .pg-count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+  }
+  .pg-grid {
+    overflow: hidden;
+    max-height: 8000px;
+    opacity: 1;
+    transition: max-height 0.35s ease, opacity 0.2s ease, margin-top 0.3s ease;
+  }
+  .pg-collapsed .pg-grid {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
   .module-card {
     padding: 22px 24px;
     background: var(--bg-card);
@@ -1304,22 +1490,97 @@
       '  </div>',
       '</section>',
 
-      // ALL MODULES
-      '<section class="section">',
-      '  <div class="section-header">',
-      '    <h2>All <span class="accent">Modules</span></h2>',
-      '    <div class="meta">' + SITE.allModules.length + ' modules · pick one to explore</div>',
-      '  </div>',
-      '  <div class="module-nav-grid">',
-      SITE.allModules.map(function(m) {
-        var name = m.display_name || m.tab_name || m.name || '';
-        var tab  = m.tab_name || m.display_name || m.name || '';
-        return '<div class="module-card" onclick="navigateTo(\'module\',\'' + escapeJs(tab) + '\')">'
-          + '<div class="name">' + escapeHtml(name) + '</div>'
-          + '</div>';
-      }).join(''),
-      '  </div>',
-      '</section>',
+      // OUR TEAM section
+      ((SITE.team && SITE.team.length) ? [
+        '<section class="team-section">',
+        '  <div class="section-header">',
+        '    <h2>Our <span class="accent">Team</span></h2>',
+        '    <div class="meta">' + SITE.team.length + ' members</div>',
+        '  </div>',
+        '  <div class="team-grid">',
+        SITE.team.map(function(t) {
+          const photo = t.photo
+            ? '<img src="' + escapeAttr(t.photo) + '" alt="" loading="lazy">'
+            : '';
+          return [
+            '<div class="team-card">',
+            '  <div class="team-photo">' + photo + '</div>',
+            '  <div class="team-name">' + escapeHtml(t.name || '') + '</div>',
+            '  <div class="team-role">' + escapeHtml(t.role || '') + '</div>',
+            '  <p class="team-bio">' + escapeHtml(t.bio || '') + '</p>',
+            '</div>'
+          ].join('');
+        }).join(''),
+        '  </div>',
+        '</section>'
+      ].join('') : ''),
+
+      // OUR STUDENTS section
+      ((SITE.students && SITE.students.length) ? [
+        '<section class="team-section students-section">',
+        '  <div class="section-header">',
+        '    <h2>Our <span class="accent">Students</span></h2>',
+        '    <div class="meta">' + SITE.students.length + ' featured</div>',
+        '  </div>',
+        '  <div class="team-grid">',
+        SITE.students.map(function(s) {
+          const photo = s.photo
+            ? '<img src="' + escapeAttr(s.photo) + '" alt="" loading="lazy">'
+            : '';
+          return [
+            '<div class="team-card">',
+            '  <div class="team-photo">' + photo + '</div>',
+            '  <div class="team-name">' + escapeHtml(s.name || '') + '</div>',
+            '  <div class="team-role">' + escapeHtml(s.role || '') + '</div>',
+            '  <p class="team-bio">' + escapeHtml(s.bio || '') + '</p>',
+            '</div>'
+          ].join('');
+        }).join(''),
+        '  </div>',
+        '</section>'
+      ].join('') : ''),
+
+      // ALL MODULES — grouped by Program, each programme collapsible (default collapsed)
+      (function() {
+        const groupOrder = [];
+        const groups = {};
+        SITE.allModules.forEach(function(m) {
+          const prog = (m.program || '').trim() || 'Other';
+          if (!groups[prog]) { groups[prog] = []; groupOrder.push(prog); }
+          groups[prog].push(m);
+        });
+        return [
+          '<section class="section">',
+          '  <div class="section-header">',
+          '    <h2>All <span class="accent">Modules</span></h2>',
+          '    <div class="meta">' + groupOrder.length + ' programs · ' + SITE.allModules.length + ' modules</div>',
+          '  </div>',
+          groupOrder.map(function(prog, gi) {
+            const mods = groups[prog];
+            return [
+              '<div class="pg-block pg-collapsed" id="pg-' + gi + '">',
+              '  <div class="pg-bar" onclick="togglePgBlock(\'pg-' + gi + '\')">',
+              '    <div class="pg-bar-left">',
+              '      <span class="pg-chev">▾</span>',
+              '      <span class="pg-name">' + escapeHtml(prog) + '</span>',
+              '    </div>',
+              '    <div class="pg-count">' + mods.length + ' module' + (mods.length === 1 ? '' : 's') + '</div>',
+              '  </div>',
+              '  <div class="pg-grid module-nav-grid">',
+              mods.map(function(m) {
+                const name = m.display_name || m.tab_name || m.name || '';
+                const tab  = m.tab_name || m.display_name || m.name || '';
+                return '<div class="module-card" onclick="navigateTo(\'module\',\'' + escapeJs(tab) + '\')">'
+                  + '<div class="name">' + escapeHtml(name) + '</div>'
+                  + '</div>';
+              }).join(''),
+              '  </div>',
+              '</div>'
+            ].join('');
+          }).join(''),
+          '</section>'
+        ].join('');
+      })(),
 
       // FOOTER — centred single-line
       '<footer>',
@@ -1331,6 +1592,11 @@
   function filterPosts(filter) {
     if (filter === 'all') return SITE.posts;
     return SITE.posts.filter(p => p.type === filter);
+  }
+
+  function togglePgBlock(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('pg-collapsed');
   }
 
   function setFilter(filter) {
@@ -1509,7 +1775,6 @@
       '<div class="module-page">',
       '  <div class="module-nav-row">',
       '    <span class="back" onclick="navigateTo(\'home\')">← BACK TO HOME</span>',
-      '    <div>' + escapeHtml(mod.display_name) + ' · ' + escapeHtml(mod.tutor) + '</div>',
       '  </div>',
       '  <div class="module-hero">',
       '    <div class="meta-line">' + cfgEscape('Module · ' + (mod.program || '')) + '</div>',
